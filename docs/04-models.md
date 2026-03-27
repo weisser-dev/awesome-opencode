@@ -83,18 +83,42 @@ Subagents uebernehmen standardmaessig das Modell des aufrufenden Primary Agents.
 
 ### 3. Steps begrenzen
 
+`steps` kontrolliert wie viele agentic Iterationen ein Agent maximal ausfuehren darf. Wird das Limit erreicht, muss der Agent seine Arbeit zusammenfassen und verbleibende Tasks auflisten.
+
+**Empfohlene Step-Limits pro Agent-Typ:**
+
+| Agent-Typ | Steps | Begruendung |
+|-----------|-------|-------------|
+| Code-schreibende Agents | unbegrenzt | Muessen iterieren bis der Code fertig ist |
+| Review/Analyse Agents | 10-15 | Lesen, analysieren, Report erstellen |
+| Orchestration Agents | 5-10 | Delegieren, nicht selbst ausfuehren |
+| Docs/Fast Agents | 5-10 | Schnelle, fokussierte Aufgaben |
+| Debugging Agents | 15-20 | Brauchen mehr Schritte fuer Trace-Analyse |
+
 ```json
 {
   "agent": {
-    "quick-task": {
+    "code-reviewer": {
+      "steps": 15,
+      "model": "anthropic/claude-sonnet-4-5-20250929"
+    },
+    "context-manager": {
       "steps": 5,
       "model": "anthropic/claude-haiku-4-5-20250929"
+    },
+    "debugger": {
+      "steps": 20,
+      "model": "anthropic/claude-sonnet-4-5-20250929"
     }
   }
 }
 ```
 
+**Tipp:** Das CLI-Tool `opencode-advanced` setzt diese Step-Limits automatisch wenn die Option "Apply recommended step limits" gewaehlt wird.
+
 ### 4. Compaction konfigurieren
+
+Compaction komprimiert den Konversations-Kontext automatisch wenn er zu lang wird. Ohne Compaction kann eine lange Session das Token-Limit ueberschreiten.
 
 ```json
 {
@@ -106,9 +130,52 @@ Subagents uebernehmen standardmaessig das Modell des aufrufenden Primary Agents.
 }
 ```
 
+| Option | Beschreibung |
+|--------|-------------|
+| `auto` | Automatische Compaction wenn Kontext zu lang wird |
+| `prune` | Alte Nachrichten entfernen nach Compaction |
+| `reserved` | Mindest-Token-Reserve fuer neue Nachrichten (Standard: 10000) |
+
 ### 5. MCP Server sparsam einsetzen
 
-Jeder MCP Server fuegt Tokens zum Kontext hinzu. Deaktiviere ungenutzte Server.
+Jeder MCP Server fuegt seine Tool-Beschreibungen zum Kontext hinzu. Das sind oft 500-2000 Tokens pro Server. Bei 10 Servern sind das schon 5000-20000 Token die bei JEDEM Request mitgeschickt werden.
+
+**Strategie:** MCP Server global deaktivieren und nur fuer spezifische Agents einschalten:
+
+```json
+{
+  "tools": {
+    "my-mcp*": false
+  },
+  "agent": {
+    "database-optimizer": {
+      "tools": {
+        "postgres*": true
+      }
+    }
+  }
+}
+```
+
+### 6. Agent-Tier-Strategie (Kosten-Uebersicht)
+
+Eine vollstaendige Kostenoptimierung kombiniert alle Massnahmen:
+
+```json
+{
+  "model": "anthropic/claude-sonnet-4-5-20250929",
+  "small_model": "anthropic/claude-haiku-4-5-20250929",
+  "compaction": { "auto": true, "prune": true },
+  "agent": {
+    "build":   { "model": "anthropic/claude-sonnet-4-5-20250929" },
+    "plan":    { "model": "anthropic/claude-haiku-4-5-20250929" },
+    "explore": { "model": "anthropic/claude-haiku-4-5-20250929" },
+    "code-reviewer":  { "model": "anthropic/claude-sonnet-4-5-20250929", "steps": 15 },
+    "docs-writer":    { "model": "anthropic/claude-haiku-4-5-20250929",  "steps": 10 },
+    "context-manager":{ "model": "anthropic/claude-haiku-4-5-20250929",  "steps": 5 }
+  }
+}
+```
 
 ---
 

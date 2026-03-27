@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
+import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, promptCostControl, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
 
 async function main() {
   try {
@@ -73,7 +73,10 @@ async function runFullSetup() {
   const mcpConfig = await promptMcp(project);
   const mcpSearchResults = await promptMcpSearch(mcpConfig);
 
-  await generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults });
+  // Cost & context control: step limits per agent
+  const costControl = await promptCostControl(agents);
+
+  await generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults, costControl });
   await promptAgentsMd({ project, agents, skills, modelConfig });
   outro();
   await launchOpenCode();

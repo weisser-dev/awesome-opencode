@@ -743,36 +743,86 @@ function detectModelsInConfig(config) {
   return [...modelIds].map(id => fingerprintModel(id)).filter(Boolean);
 }
 
-// Agent tiers: which agents need which model quality
-// frontier = complex reasoning, code generation, architecture
-// strong   = good balance of speed and quality
-// fast     = read-only, exploration, simple tasks
+// Agent tiers: which agents need which model quality and iteration limits.
+// tier: frontier = complex reasoning, code generation, architecture
+//       strong   = good balance of speed and quality
+//       fast     = read-only, exploration, simple tasks
+// steps: max agentic iterations (null = unlimited, number = limit)
+//   - Code-writing agents: no limit (they need to iterate until done)
+//   - Analysis/review agents: 10-15 steps (read, analyze, report)
+//   - Fast/read-only agents: 5-10 steps (quick lookups)
 const AGENT_TIERS = {
   // Primary agents
-  build:   'frontier',
-  plan:    'fast',
-  // Subagents that WRITE code
-  'backend-developer': 'frontier', 'frontend-developer': 'frontier', 'fullstack-developer': 'frontier',
-  'api-designer': 'strong', 'graphql-architect': 'strong', 'microservices-architect': 'strong',
-  'refactorer': 'strong', 'test-writer': 'strong', 'test-automator': 'strong',
-  // Language specialists
-  'typescript-pro': 'frontier', 'javascript-pro': 'frontier', 'python-pro': 'frontier',
-  'java-architect': 'frontier', 'rust-engineer': 'frontier', 'golang-pro': 'frontier',
-  'react-specialist': 'strong', 'nextjs-developer': 'strong', 'vue-expert': 'strong',
-  'spring-boot-engineer': 'strong', 'django-developer': 'strong', 'fastapi-developer': 'strong',
-  // READ-ONLY / analysis agents
-  'code-reviewer': 'strong', 'architect-reviewer': 'strong', 'security-auditor': 'strong',
-  'performance-engineer': 'strong', 'compliance-auditor': 'strong',
-  'debugger': 'strong', 'error-detective': 'strong',
-  'penetration-tester': 'strong',
-  // Cheap/fast agents
-  'docs-writer': 'fast', 'technical-writer': 'fast',
-  'context-manager': 'fast', 'task-distributor': 'fast',
-  'search-specialist': 'fast', 'research-analyst': 'fast',
-  'dependency-manager': 'fast', 'git-workflow-manager': 'fast',
+  build:   { tier: 'frontier', steps: null },
+  plan:    { tier: 'fast',     steps: null },
+  // Subagents that WRITE code -- no step limit
+  'backend-developer':  { tier: 'frontier', steps: null },
+  'frontend-developer': { tier: 'frontier', steps: null },
+  'fullstack-developer':{ tier: 'frontier', steps: null },
+  'api-designer':       { tier: 'strong',   steps: null },
+  'graphql-architect':  { tier: 'strong',   steps: null },
+  'microservices-architect': { tier: 'strong', steps: null },
+  'refactorer':         { tier: 'strong',   steps: null },
+  'test-writer':        { tier: 'strong',   steps: null },
+  'test-automator':     { tier: 'strong',   steps: null },
+  // Language specialists -- no step limit (they write code)
+  'typescript-pro': { tier: 'frontier', steps: null },
+  'javascript-pro': { tier: 'frontier', steps: null },
+  'python-pro':     { tier: 'frontier', steps: null },
+  'java-architect': { tier: 'frontier', steps: null },
+  'rust-engineer':  { tier: 'frontier', steps: null },
+  'golang-pro':     { tier: 'frontier', steps: null },
+  'react-specialist':    { tier: 'strong', steps: null },
+  'nextjs-developer':    { tier: 'strong', steps: null },
+  'vue-expert':          { tier: 'strong', steps: null },
+  'spring-boot-engineer':{ tier: 'strong', steps: null },
+  'django-developer':    { tier: 'strong', steps: null },
+  'fastapi-developer':   { tier: 'strong', steps: null },
+  // READ-ONLY / analysis agents -- limited steps
+  'code-reviewer':       { tier: 'strong', steps: 15 },
+  'architect-reviewer':  { tier: 'strong', steps: 15 },
+  'security-auditor':    { tier: 'strong', steps: 15 },
+  'performance-engineer':{ tier: 'strong', steps: 15 },
+  'compliance-auditor':  { tier: 'strong', steps: 15 },
+  'debugger':            { tier: 'strong', steps: 20 },
+  'error-detective':     { tier: 'strong', steps: 15 },
+  'penetration-tester':  { tier: 'strong', steps: 15 },
+  'accessibility-tester':{ tier: 'strong', steps: 10 },
+  'chaos-engineer':      { tier: 'strong', steps: 10 },
+  // Cheap/fast agents -- tight step limits
+  'docs-writer':         { tier: 'fast', steps: 10 },
+  'technical-writer':    { tier: 'fast', steps: 10 },
+  'context-manager':     { tier: 'fast', steps: 5 },
+  'task-distributor':    { tier: 'fast', steps: 5 },
+  'search-specialist':   { tier: 'fast', steps: 8 },
+  'research-analyst':    { tier: 'fast', steps: 10 },
+  'dependency-manager':  { tier: 'fast', steps: 10 },
+  'git-workflow-manager':{ tier: 'fast', steps: 8 },
+  // Business/product -- advisory, limited steps
+  'business-analyst':    { tier: 'strong', steps: 10 },
+  'product-manager':     { tier: 'strong', steps: 10 },
+  'project-manager':     { tier: 'strong', steps: 8 },
+  'scrum-master':        { tier: 'fast',   steps: 8 },
+  'ux-researcher':       { tier: 'strong', steps: 10 },
+  // Research -- moderate steps
+  'competitive-analyst': { tier: 'strong', steps: 12 },
+  'trend-analyst':       { tier: 'strong', steps: 10 },
+  'market-researcher':   { tier: 'strong', steps: 10 },
+  'data-researcher':     { tier: 'strong', steps: 12 },
+  // Orchestration -- limited steps (they delegate, not execute)
+  'workflow-orchestrator':     { tier: 'strong', steps: 10 },
+  'multi-agent-coordinator':  { tier: 'strong', steps: 10 },
+  'agent-organizer':          { tier: 'fast',   steps: 5 },
+  'knowledge-synthesizer':    { tier: 'fast',   steps: 8 },
+  'error-coordinator':        { tier: 'strong', steps: 10 },
   // Default for unlisted agents
-  '_default': 'strong',
+  '_default': { tier: 'strong', steps: null },
 };
+
+function getAgentTier(agentName) {
+  const entry = AGENT_TIERS[agentName] || AGENT_TIERS['_default'];
+  return typeof entry === 'object' ? entry : { tier: entry, steps: null };
+}
 
 const MODEL_PRESETS = {
   'cost-optimized': {
@@ -1240,9 +1290,50 @@ export async function promptMcpSearch(currentMcpSelections) {
   });
 }
 
+// ─── Cost & Context Control ─────────────────────────────────────────────────
+
+export async function promptCostControl(agents) {
+  const apply = await confirm({
+    message: 'Apply recommended step limits per agent? (controls context/cost)',
+    default: true,
+  });
+
+  if (!apply) return { steps: false, compaction: true };
+
+  console.log('');
+  console.log(chalk.gray('  Step limits control how many iterations each agent can perform.'));
+  console.log(chalk.gray('  Code-writing agents: unlimited | Review agents: 10-15 | Fast agents: 5-10'));
+  console.log('');
+
+  // Show what would be applied for selected agents
+  const limited = agents.filter(a => {
+    const t = getAgentTier(a);
+    return t.steps !== null;
+  });
+  const unlimited = agents.filter(a => {
+    const t = getAgentTier(a);
+    return t.steps === null;
+  });
+
+  if (limited.length > 0) {
+    console.log(chalk.gray('  Limited:'));
+    for (const a of limited.slice(0, 8)) {
+      const t = getAgentTier(a);
+      console.log(chalk.gray(`    ${a}: ${t.steps} steps`));
+    }
+    if (limited.length > 8) console.log(chalk.gray(`    ... and ${limited.length - 8} more`));
+  }
+  if (unlimited.length > 0) {
+    console.log(chalk.gray(`  Unlimited: ${unlimited.join(', ')}`));
+  }
+  console.log('');
+
+  return { steps: true, compaction: true };
+}
+
 // ─── File Generation ────────────────────────────────────────────────────────
 
-export async function generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults = [] }) {
+export async function generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults = [], costControl = {} }) {
   const spinner = ora('Generating files...').start();
   const templateBase = getTemplateBase();
 
@@ -1313,6 +1404,18 @@ export async function generateFiles({ project, agents, skills, modelConfig, mcpC
     for (const result of mcpSearchResults) {
       const safeName = result.value.replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
       config.mcp[safeName] = result.config;
+    }
+  }
+
+  // Add step limits per agent (cost control)
+  if (costControl.steps && agents.length > 0) {
+    if (!config.agent) config.agent = {};
+    for (const agentName of agents) {
+      const agentInfo = getAgentTier(agentName);
+      if (agentInfo.steps !== null) {
+        if (!config.agent[agentName]) config.agent[agentName] = {};
+        config.agent[agentName].steps = agentInfo.steps;
+      }
     }
   }
 
