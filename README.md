@@ -393,6 +393,43 @@ npm install -g @weisser-dev/awesome-opencode
 awesome-opencode
 ```
 
+### CLI Subcommands
+
+```bash
+awesome-opencode                      # Interactive setup or re-run menu
+awesome-opencode configure            # Reconfigure everything
+awesome-opencode configure agents     # Add/remove agents
+awesome-opencode configure skills     # Add/remove skills
+awesome-opencode configure models     # Change model strategy
+awesome-opencode configure mcp        # Add/remove MCP servers
+awesome-opencode --help               # Show help
+```
+
+### Sandboxed Mode (Docker)
+
+Run OpenCode in an isolated Docker container where only the current project is accessible:
+
+```
+? Run OpenCode in a sandbox? (Docker, only this project accessible — recommended for enterprise) Yes
+
+? Which LLM provider are you using?
+❯ AWS Bedrock
+  ...
+
+  Docker command:
+  docker run -it --rm \
+    -v "$(pwd)":/workspace \
+    -w /workspace \
+    -e AWS_BEARER_TOKEN_BEDROCK \
+    -e AWS_REGION="eu-central-1" \
+    node:22 \
+    bash -c "npm i -g opencode-ai && opencode"
+
+? Run this Docker command now? Yes
+```
+
+Supports 7 providers: Anthropic, OpenAI, AWS Bedrock, Azure OpenAI, Google AI, OpenRouter, Custom.
+
 ### Manual setup (without CLI)
 
 ```bash

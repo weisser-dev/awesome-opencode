@@ -7,103 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-03-27
+## [1.1.0] - 2026-03-27
 
 ### Added
 
-**108 Agents across 10 categories** (up from 23):
-- Core Development (8): api-designer, backend-developer, frontend-developer, fullstack-developer, graphql-architect, microservices-architect, mobile-developer, websocket-engineer
-- Language Specialists (22): typescript-pro, javascript-pro, python-pro, java-architect, kotlin-specialist, golang-pro, rust-engineer, swift-expert, cpp-pro, csharp-developer, php-pro, ruby-pro, react-specialist, vue-expert, angular-architect, nextjs-developer, django-developer, fastapi-developer, spring-boot-engineer, laravel-specialist, flutter-expert, elixir-expert
-- Infrastructure (13): azure-infra-engineer, cloud-architect, database-administrator, deployment-engineer, devops-engineer, docker-expert, incident-responder, kubernetes-specialist, network-engineer, platform-engineer, security-engineer, sre-engineer, terraform-engineer
-- Quality & Security (11): accessibility-tester, architect-reviewer, chaos-engineer, code-reviewer, compliance-auditor, debugger, error-detective, penetration-tester, performance-engineer, security-auditor, test-automator
-- Data & AI (12): ai-engineer, data-analyst, data-engineer, data-scientist, database-optimizer, llm-architect, machine-learning-engineer, mlops-engineer, nlp-engineer, postgres-pro, prompt-engineer, sql-pro
-- Developer Experience (11): build-engineer, cli-developer, dependency-manager, docs-writer, dx-optimizer, git-workflow-manager, legacy-modernizer, mcp-developer, refactorer, test-writer, tooling-engineer
-- Specialized Domains (8): blockchain-developer, embedded-systems, fintech-engineer, game-developer, iot-engineer, mobile-app-developer, payment-integration, seo-specialist
-- Business & Product (9): business-analyst, content-marketer, legal-advisor, product-manager, project-manager, sales-engineer, scrum-master, technical-writer, ux-researcher
-- Meta & Orchestration (7): agent-organizer, context-manager, error-coordinator, knowledge-synthesizer, multi-agent-coordinator, task-distributor, workflow-orchestrator
-- Research & Analysis (7): competitive-analyst, data-researcher, market-researcher, research-analyst, scientific-literature-researcher, search-specialist, trend-analyst
+**Sandboxed OpenCode via Docker**:
+- New prompt: "Run OpenCode in a sandbox?" (shown when Docker is available)
+- Docker container mounts only current project directory as `/workspace`
+- Provider-aware environment variable configuration for 7 providers:
+  Anthropic, OpenAI, AWS Bedrock, Azure OpenAI, Google AI, OpenRouter, Custom
+- Auto-detects existing env vars in host shell, asks to reuse (masked display)
+- Shows full Docker command for review/copy before execution
+- Recommended for enterprise environments to avoid accidental access outside project
 
-**Smart Model Detection**:
-- Model fingerprinting recognizes Claude, GPT, Gemini, DeepSeek, Llama, Mistral from any provider ID
-- Works with custom providers (Bedrock: `eu.anthropic.claude-opus-4-6-v1`, Azure, self-hosted)
-- 26 model fingerprints with coding benchmark scores (0-100) and cost tiers ($-$$$$$)
-- Auto-optimize option: uses YOUR existing models for best frontier/fast mix
-- Agent-tier mapping: which agents need frontier vs. strong vs. fast models
+**CLI Subcommands**:
+- `awesome-opencode --help` — show usage
+- `awesome-opencode configure` — full reconfigure
+- `awesome-opencode configure agents` — add/remove agents only
+- `awesome-opencode configure skills` — add/remove skills only
+- `awesome-opencode configure models` — change model strategy only
+- `awesome-opencode configure mcp` — add/remove MCP servers only
 
-**MCP Registry Search**:
-- Live search via official `registry.modelcontextprotocol.io` API
-- Browse, select, and auto-configure any registered MCP server
-- Results show name, version, description with interactive checkbox
+**Improved Re-Run Menu** (when already configured):
+- Start OpenCode (direct, no sandbox question)
+- Start OpenCode (Sandboxed) (direct Docker launch)
+- Reconfigure (full setup again)
+- Configure agents / skills / models / MCP (targeted changes)
+- Exit
+
+**MCP Search via mcp.so** (replaces registry.modelcontextprotocol.io):
+- Live search against mcp.so (reliable, fast)
+- Parses server cards with title, author, description
+- Filters out mirrors automatically
+- Supports multiple searches in a loop ("Search for more?")
+- Asks for npm package name confirmation per selected server
+
+**Existing Config Detection**:
+- Shows custom providers found in config (e.g. `aws`, `azure-gpt`)
+- Shows existing agents (e.g. `review`)
+- Shows existing MCP servers (e.g. `MCP_DOCKER`, `MCP_PLAYWRIGHT`)
+
+**GPT-5.3 Model Fingerprints**:
+- Added GPT-5.3, GPT-5.3 Codex, GPT-5.3 Chat patterns
+- Reordered OpenAI patterns (most specific first)
 
 ### Changed
 
-- CLI AVAILABLE_AGENTS expanded from 23 to 108 entries across 10 categories
-- Model strategy prompt now detects and displays existing models with benchmark data
-- Model presets still available as fallback when no models detected
+- `launchOpenCode()` accepts `{ forceSandbox: true|false }` parameter
+- Re-run menu now has 8 options instead of 3
 
-## [0.2.0] - 2026-03-27
+## [1.0.0] - 2026-03-27
 
 ### Added
 
-**23 Agents in 7 categories** (up from 6):
-- Core (6): code-reviewer, docs-writer, security-auditor, debugger, refactorer, test-writer
-- Development (3): api-designer, microservices-architect, architect-reviewer
-- Quality (4): performance-engineer, accessibility-tester, compliance-auditor, chaos-engineer
-- Infrastructure (3): devops-engineer, docker-expert, sre-engineer
-- Data (1): database-optimizer
-- Productivity (4): dependency-manager, git-workflow-manager, legacy-modernizer, error-detective
-- Orchestration (2): context-manager, workflow-orchestrator
-
-**15 Skills** (up from 5):
-- New: dependency-audit, incident-postmortem, docker-optimize, adr-write, api-contract, changelog-generate, ci-pipeline, env-setup, error-triage, performance-profile
-
-**18 curated MCP servers** (up from 3) filtered by selected languages:
-- Universal: context7, gh-grep, memory, fetch, sequential-thinking
-- Git: git
-- Monitoring: sentry, axiom
-- Database: postgres, sqlite, redis
-- Cloud: aws, kubernetes
-- Deployment: vercel
-- Testing: puppeteer
-- Collaboration: atlassian, linear
-- Design: figma
-
-**New CLI flow**:
-- Fresh vs existing project detection ("Auto-detect or Select manually")
-- Multi-select languages (auto-detected are pre-checked, add others freely)
-- 27+ language/technology options with file-extension scanning for unknown projects
-- `.opencode/advanced.json` state file to remember setup
-- Re-run shows "Already configured! Start / Reconfigure / Exit"
-- AGENTS.md auto-generation with language-specific conventions, agents, and skills
+- Initial public release
+- 108 agent templates across 10 categories
+- 15 skill templates
+- 18 curated MCP servers filtered by project language
+- Smart model detection with 26 fingerprints (Anthropic, OpenAI, Google, DeepSeek, Meta, Mistral)
+- Auto-optimize option for custom provider models
+- Agent-tier mapping (frontier/strong/fast) with step limits per agent
+- Step limits and cost control per agent type
+- Interactive CLI with fresh vs existing project detection
+- Multi-select languages with file-extension scanning (28 languages)
+- Language-aware agent recommendations with reason tags
+- AGENTS.md auto-generation with language-specific conventions
+- Re-run detection via `.opencode/advanced.json`
 - OpenCode auto-launch after setup
-
-### Changed
-
-- CLI renamed from `awesome-opencode-setup` to `awesome-opencode`
-- npm package renamed to `@weisser-dev/awesome-opencode`
-- `project.languages` is now an array (multi-language support)
-- Agent categories reorganized with visual separator lines in the checkbox prompt
-
-## [0.1.0] - 2026-03-27
-
-### Added
-
-- Initial project setup
-- 7 documentation files covering agents, skills, MCP servers, models, rules, tools, and permissions
-- 6 agent templates: code-reviewer, docs-writer, security-auditor, debugger, refactorer, test-writer
-- 5 skill templates: git-release, pr-review, migration, test-patterns, deploy
-- 5 config presets: cost-optimized, node-typescript, java-spring, python, security-focused
-- CLI tool `awesome-opencode-setup` with:
-  - Project detection (Node, Java, Python, Go, Rust)
-  - Framework detection (Next.js, Spring Boot, Django, FastAPI, etc.)
-  - Interactive agent/skill/model/MCP selection
-  - `opencode.json` generation with model optimization
-  - 4 model strategy presets (Cost Optimized, Quality Focused, OpenAI, Mixed)
-  - 3 MCP servers (context7, gh-grep, sentry)
-- README with documentation, templates, and quickstart
+- Comprehensive language-to-agent mapping for all 28 languages
+- 7 documentation files (agents, skills, MCP, models, rules, tools, permissions)
+- 5 config presets (cost-optimized, node-typescript, java-spring, python, security-focused)
+- CI/CD workflows (ci.yml + release.yml)
 - MIT license
 
-[Unreleased]: https://github.com/weisser-dev/awesome-opencode/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/weisser-dev/awesome-opencode/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/weisser-dev/awesome-opencode/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/weisser-dev/awesome-opencode/releases/tag/v0.1.0
+[Unreleased]: https://github.com/weisser-dev/awesome-opencode/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/weisser-dev/awesome-opencode/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/weisser-dev/awesome-opencode/releases/tag/v1.0.0
