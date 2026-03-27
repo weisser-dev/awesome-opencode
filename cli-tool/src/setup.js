@@ -597,26 +597,46 @@ const DEFAULT_AGENTS = new Set([
 ]);
 
 // Map languages to recommended agents
+// Each language suggests agents that are specifically useful for that ecosystem
 const LANGUAGE_AGENT_MAP = {
-  'node':       ['typescript-pro', 'javascript-pro', 'react-specialist', 'nextjs-developer', 'vue-expert', 'angular-architect'],
-  'python':     ['python-pro', 'django-developer', 'fastapi-developer'],
-  'java':       ['java-architect', 'spring-boot-engineer', 'kotlin-specialist'],
-  'kotlin':     ['kotlin-specialist', 'java-architect'],
-  'go':         ['golang-pro'],
-  'rust':       ['rust-engineer'],
-  'ruby':       ['ruby-pro'],
-  'php':        ['php-pro', 'laravel-specialist'],
-  'csharp':     ['csharp-developer'],
-  'swift':      ['swift-expert', 'mobile-app-developer'],
-  'dart':       ['flutter-expert', 'mobile-app-developer'],
-  'cpp':        ['cpp-pro'],
-  'terraform':  ['terraform-engineer', 'cloud-architect'],
-  'kubernetes': ['kubernetes-specialist', 'docker-expert'],
-  'docker':     ['docker-expert', 'devops-engineer'],
-  'solidity':   ['blockchain-developer'],
-  'elixir':     ['elixir-expert'],
-  'scala':      ['java-architect'],
-  'sql':        ['sql-pro', 'postgres-pro', 'database-optimizer'],
+  // ── Web / Frontend ────────────────────────────────────────────────────────
+  'node':       ['typescript-pro', 'javascript-pro', 'react-specialist', 'nextjs-developer', 'vue-expert', 'angular-architect', 'frontend-developer', 'fullstack-developer', 'backend-developer', 'build-engineer', 'websocket-engineer'],
+  // ── Backend Languages ─────────────────────────────────────────────────────
+  'python':     ['python-pro', 'django-developer', 'fastapi-developer', 'backend-developer', 'data-engineer', 'data-scientist', 'ai-engineer', 'machine-learning-engineer', 'prompt-engineer'],
+  'java':       ['java-architect', 'spring-boot-engineer', 'kotlin-specialist', 'backend-developer', 'microservices-architect', 'database-administrator'],
+  'kotlin':     ['kotlin-specialist', 'java-architect', 'spring-boot-engineer', 'mobile-developer', 'backend-developer'],
+  'go':         ['golang-pro', 'backend-developer', 'microservices-architect', 'cli-developer', 'network-engineer'],
+  'rust':       ['rust-engineer', 'backend-developer', 'embedded-systems', 'cli-developer', 'performance-engineer'],
+  'ruby':       ['ruby-pro', 'backend-developer', 'fullstack-developer'],
+  'php':        ['php-pro', 'laravel-specialist', 'backend-developer', 'fullstack-developer'],
+  'csharp':     ['csharp-developer', 'backend-developer', 'azure-infra-engineer'],
+  'scala':      ['java-architect', 'data-engineer', 'backend-developer'],
+  'elixir':     ['elixir-expert', 'backend-developer', 'websocket-engineer'],
+  // ── Mobile ────────────────────────────────────────────────────────────────
+  'swift':      ['swift-expert', 'mobile-app-developer', 'mobile-developer'],
+  'dart':       ['flutter-expert', 'mobile-app-developer', 'mobile-developer'],
+  // ── Systems ───────────────────────────────────────────────────────────────
+  'cpp':        ['cpp-pro', 'embedded-systems', 'performance-engineer', 'game-developer'],
+  'c':          ['cpp-pro', 'embedded-systems', 'performance-engineer'],
+  'zig':        ['rust-engineer', 'embedded-systems', 'performance-engineer'],
+  // ── Infrastructure / IaC ──────────────────────────────────────────────────
+  'terraform':  ['terraform-engineer', 'cloud-architect', 'platform-engineer', 'security-engineer', 'sre-engineer', 'deployment-engineer'],
+  'ansible':    ['cloud-architect', 'platform-engineer', 'security-engineer', 'sre-engineer', 'deployment-engineer', 'network-engineer'],
+  'cloudformation': ['cloud-architect', 'platform-engineer', 'security-engineer', 'azure-infra-engineer'],
+  'bicep':      ['azure-infra-engineer', 'cloud-architect', 'platform-engineer', 'security-engineer'],
+  'pulumi':     ['cloud-architect', 'platform-engineer', 'deployment-engineer'],
+  // ── Containers / Orchestration ────────────────────────────────────────────
+  'kubernetes': ['kubernetes-specialist', 'docker-expert', 'platform-engineer', 'sre-engineer', 'network-engineer', 'incident-responder', 'deployment-engineer'],
+  'docker':     ['docker-expert', 'devops-engineer', 'platform-engineer', 'sre-engineer', 'deployment-engineer'],
+  // ── Data / Contracts ──────────────────────────────────────────────────────
+  'sql':        ['sql-pro', 'postgres-pro', 'database-optimizer', 'database-administrator', 'data-engineer', 'data-analyst'],
+  'graphql':    ['graphql-architect', 'api-designer', 'fullstack-developer'],
+  'protobuf':   ['api-designer', 'microservices-architect', 'backend-developer'],
+  // ── Web3 ──────────────────────────────────────────────────────────────────
+  'solidity':   ['blockchain-developer', 'security-auditor', 'fintech-engineer'],
+  // ── Scripting / Docs ──────────────────────────────────────────────────────
+  'shell':      ['devops-engineer', 'cli-developer', 'sre-engineer', 'platform-engineer'],
+  'markdown':   ['docs-writer', 'technical-writer'],
 };
 
 export async function promptAgents(project) {
