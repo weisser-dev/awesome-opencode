@@ -511,7 +511,13 @@ This project builds on the work of several open-source communities:
 - **[darrenhinde/OpenAgentsControl](https://github.com/darrenhinde/OpenAgentsControl)** -- Agent configuration patterns and workflows.
 - **[OpenCode Official Docs](https://opencode.ai/docs/)** -- Agents, skills, MCP, permissions, and configuration reference.
 - **[pricepertoken.com](https://pricepertoken.com/leaderboards/coding)** -- Model benchmark rankings and pricing data for the model intelligence feature.
+- **[models.dev](https://models.dev)** -- Open-source database of AI models (by anomalyco). Model fingerprints sourced from here.
 - **[registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io)** -- Official MCP server registry API for live search.
+
+## Also by weisser-dev
+
+- **[agentic-ai.weisser.dev](https://agentic-ai.weisser.dev)** -- Free, ad-free self-learning platform for Agentic AI. Want to learn more about agents, MCP, and AI-assisted development? Start here.
+- **[opencode-remote-telegram](https://github.com/weisser-dev/opencode-remote-telegram)** -- Control OpenCode remotely via Telegram. Run sessions from your phone.
 
 ## Resources
 

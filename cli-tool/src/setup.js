@@ -800,42 +800,100 @@ export async function promptSkills(project) {
 
 // Known model fingerprints -- maps regex patterns to canonical model info.
 // This allows recognizing models even through custom providers (e.g. Bedrock, Azure).
+// Families sourced from https://models.dev (anomalyco/models.dev)
 const MODEL_FINGERPRINTS = [
-  // Anthropic
-  { pattern: /claude.*opus.*4/i,      canonical: 'claude-opus-4',     family: 'anthropic', tier: 'frontier', coding: 95, cost: 'high' },
-  { pattern: /claude.*sonnet.*4/i,    canonical: 'claude-sonnet-4',   family: 'anthropic', tier: 'strong',   coding: 90, cost: 'medium' },
-  { pattern: /claude.*haiku.*4/i,     canonical: 'claude-haiku-4',    family: 'anthropic', tier: 'fast',     coding: 75, cost: 'low' },
-  { pattern: /claude.*opus.*3/i,      canonical: 'claude-opus-3',     family: 'anthropic', tier: 'strong',   coding: 80, cost: 'high' },
-  { pattern: /claude.*sonnet.*3/i,    canonical: 'claude-sonnet-3',   family: 'anthropic', tier: 'strong',   coding: 78, cost: 'medium' },
-  { pattern: /claude.*haiku.*3/i,     canonical: 'claude-haiku-3',    family: 'anthropic', tier: 'fast',     coding: 60, cost: 'low' },
-  // OpenAI -- order matters: most specific patterns first
-  { pattern: /gpt.*5\.?3.*codex/i,   canonical: 'gpt-5.3-codex',     family: 'openai',    tier: 'frontier', coding: 96, cost: 'very-high' },
-  { pattern: /gpt.*5\.?3.*chat/i,    canonical: 'gpt-5.3-chat',      family: 'openai',    tier: 'frontier', coding: 94, cost: 'high' },
-  { pattern: /gpt.*5\.?3/i,          canonical: 'gpt-5.3',           family: 'openai',    tier: 'frontier', coding: 94, cost: 'high' },
-  { pattern: /gpt.*5\.?2/i,          canonical: 'gpt-5.2',           family: 'openai',    tier: 'frontier', coding: 93, cost: 'high' },
-  { pattern: /gpt.*5\.?1.*codex/i,   canonical: 'gpt-5.1-codex',     family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
-  { pattern: /gpt.*5\.?1/i,          canonical: 'gpt-5.1',           family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
-  { pattern: /gpt.*5/i,              canonical: 'gpt-5',             family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
-  { pattern: /gpt.*4o[\b-]/i,        canonical: 'gpt-4o',            family: 'openai',    tier: 'strong',   coding: 80, cost: 'medium' },
-  { pattern: /gpt.*4o.*mini/i,       canonical: 'gpt-4o-mini',       family: 'openai',    tier: 'fast',     coding: 65, cost: 'low' },
-  { pattern: /o3/i,                   canonical: 'o3',                family: 'openai',    tier: 'frontier', coding: 96, cost: 'very-high' },
-  { pattern: /o4.*mini/i,            canonical: 'o4-mini',            family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
-  // Google
-  { pattern: /gemini.*3.*pro/i,      canonical: 'gemini-3-pro',      family: 'google',    tier: 'strong',   coding: 82, cost: 'medium' },
-  { pattern: /gemini.*2\.?5.*pro/i,  canonical: 'gemini-2.5-pro',    family: 'google',    tier: 'strong',   coding: 80, cost: 'medium' },
-  { pattern: /gemini.*2\.?5.*flash/i,canonical: 'gemini-2.5-flash',  family: 'google',    tier: 'fast',     coding: 72, cost: 'low' },
-  { pattern: /gemini.*2.*flash/i,    canonical: 'gemini-2-flash',    family: 'google',    tier: 'fast',     coding: 68, cost: 'low' },
-  // DeepSeek
-  { pattern: /deepseek.*v3/i,        canonical: 'deepseek-v3',       family: 'deepseek',  tier: 'strong',   coding: 82, cost: 'low' },
-  { pattern: /deepseek.*r1/i,        canonical: 'deepseek-r1',       family: 'deepseek',  tier: 'strong',   coding: 85, cost: 'low' },
-  // Meta
-  { pattern: /llama.*4.*maverick/i,  canonical: 'llama-4-maverick',  family: 'meta',      tier: 'strong',   coding: 78, cost: 'low' },
-  { pattern: /llama.*4.*scout/i,     canonical: 'llama-4-scout',     family: 'meta',      tier: 'fast',     coding: 70, cost: 'very-low' },
-  { pattern: /llama.*3.*405/i,       canonical: 'llama-3-405b',      family: 'meta',      tier: 'strong',   coding: 75, cost: 'low' },
-  { pattern: /llama.*3.*70/i,        canonical: 'llama-3-70b',       family: 'meta',      tier: 'fast',     coding: 65, cost: 'very-low' },
-  // Mistral
-  { pattern: /mistral.*large/i,      canonical: 'mistral-large',     family: 'mistral',   tier: 'strong',   coding: 75, cost: 'medium' },
-  { pattern: /codestral/i,           canonical: 'codestral',         family: 'mistral',   tier: 'strong',   coding: 78, cost: 'low' },
+  // ── Anthropic ─────────────────────────────────────────────────────────────
+  { pattern: /claude.*opus.*4/i,        canonical: 'claude-opus-4',       family: 'anthropic', tier: 'frontier', coding: 95, cost: 'high' },
+  { pattern: /claude.*sonnet.*4/i,      canonical: 'claude-sonnet-4',     family: 'anthropic', tier: 'strong',   coding: 90, cost: 'medium' },
+  { pattern: /claude.*haiku.*4/i,       canonical: 'claude-haiku-4',      family: 'anthropic', tier: 'fast',     coding: 75, cost: 'low' },
+  { pattern: /claude.*opus.*3/i,        canonical: 'claude-opus-3',       family: 'anthropic', tier: 'strong',   coding: 80, cost: 'high' },
+  { pattern: /claude.*sonnet.*3/i,      canonical: 'claude-sonnet-3',     family: 'anthropic', tier: 'strong',   coding: 78, cost: 'medium' },
+  { pattern: /claude.*haiku.*3/i,       canonical: 'claude-haiku-3',      family: 'anthropic', tier: 'fast',     coding: 60, cost: 'low' },
+  // ── OpenAI (most specific first) ──────────────────────────────────────────
+  { pattern: /gpt.*5\.?3.*codex/i,     canonical: 'gpt-5.3-codex',       family: 'openai',    tier: 'frontier', coding: 96, cost: 'very-high' },
+  { pattern: /gpt.*5\.?3.*chat/i,      canonical: 'gpt-5.3-chat',        family: 'openai',    tier: 'frontier', coding: 94, cost: 'high' },
+  { pattern: /gpt.*5\.?3/i,            canonical: 'gpt-5.3',             family: 'openai',    tier: 'frontier', coding: 94, cost: 'high' },
+  { pattern: /gpt.*5\.?2/i,            canonical: 'gpt-5.2',             family: 'openai',    tier: 'frontier', coding: 93, cost: 'high' },
+  { pattern: /gpt.*5\.?1.*codex/i,     canonical: 'gpt-5.1-codex',       family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
+  { pattern: /gpt.*5\.?1/i,            canonical: 'gpt-5.1',             family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
+  { pattern: /gpt.*5.*codex/i,         canonical: 'gpt-5-codex',         family: 'openai',    tier: 'strong',   coding: 86, cost: 'medium' },
+  { pattern: /gpt.*5.*mini/i,          canonical: 'gpt-5-mini',          family: 'openai',    tier: 'fast',     coding: 72, cost: 'low' },
+  { pattern: /gpt.*5/i,                canonical: 'gpt-5',               family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
+  { pattern: /gpt.*4\.?1.*nano/i,      canonical: 'gpt-4.1-nano',        family: 'openai',    tier: 'fast',     coding: 60, cost: 'very-low' },
+  { pattern: /gpt.*4\.?1.*mini/i,      canonical: 'gpt-4.1-mini',        family: 'openai',    tier: 'fast',     coding: 68, cost: 'low' },
+  { pattern: /gpt.*4\.?1/i,            canonical: 'gpt-4.1',             family: 'openai',    tier: 'strong',   coding: 82, cost: 'medium' },
+  { pattern: /gpt.*4o.*mini/i,         canonical: 'gpt-4o-mini',          family: 'openai',    tier: 'fast',     coding: 65, cost: 'low' },
+  { pattern: /gpt.*4o/i,               canonical: 'gpt-4o',               family: 'openai',    tier: 'strong',   coding: 80, cost: 'medium' },
+  { pattern: /gpt.*4.*turbo/i,         canonical: 'gpt-4-turbo',          family: 'openai',    tier: 'strong',   coding: 75, cost: 'medium' },
+  { pattern: /codex.*mini/i,           canonical: 'codex-mini',           family: 'openai',    tier: 'fast',     coding: 70, cost: 'low' },
+  { pattern: /o4.*mini/i,              canonical: 'o4-mini',              family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
+  { pattern: /o3[\b\-]|^o3$/i,         canonical: 'o3',                   family: 'openai',    tier: 'frontier', coding: 96, cost: 'very-high' },
+  // ── Google ────────────────────────────────────────────────────────────────
+  { pattern: /gemini.*3.*pro/i,        canonical: 'gemini-3-pro',        family: 'google',    tier: 'strong',   coding: 82, cost: 'medium' },
+  { pattern: /gemini.*2\.?5.*pro/i,    canonical: 'gemini-2.5-pro',      family: 'google',    tier: 'strong',   coding: 80, cost: 'medium' },
+  { pattern: /gemini.*2\.?5.*flash.*lite/i, canonical: 'gemini-2.5-flash-lite', family: 'google', tier: 'fast', coding: 62, cost: 'very-low' },
+  { pattern: /gemini.*2\.?5.*flash/i,  canonical: 'gemini-2.5-flash',    family: 'google',    tier: 'fast',     coding: 72, cost: 'low' },
+  { pattern: /gemini.*2.*flash.*lite/i,canonical: 'gemini-2-flash-lite', family: 'google',    tier: 'fast',     coding: 58, cost: 'very-low' },
+  { pattern: /gemini.*2.*flash/i,      canonical: 'gemini-2-flash',      family: 'google',    tier: 'fast',     coding: 68, cost: 'low' },
+  { pattern: /gemini.*1\.?5.*pro/i,    canonical: 'gemini-1.5-pro',      family: 'google',    tier: 'strong',   coding: 72, cost: 'medium' },
+  { pattern: /gemini.*1\.?5.*flash/i,  canonical: 'gemini-1.5-flash',    family: 'google',    tier: 'fast',     coding: 60, cost: 'low' },
+  // ── DeepSeek ──────────────────────────────────────────────────────────────
+  { pattern: /deepseek.*r1/i,          canonical: 'deepseek-r1',         family: 'deepseek',  tier: 'strong',   coding: 85, cost: 'low' },
+  { pattern: /deepseek.*v3|deepseek.*chat/i, canonical: 'deepseek-v3',   family: 'deepseek',  tier: 'strong',   coding: 82, cost: 'low' },
+  // ── Meta / Llama ──────────────────────────────────────────────────────────
+  { pattern: /llama.*4.*maverick/i,    canonical: 'llama-4-maverick',    family: 'meta',      tier: 'strong',   coding: 78, cost: 'low' },
+  { pattern: /llama.*4.*scout/i,       canonical: 'llama-4-scout',       family: 'meta',      tier: 'fast',     coding: 70, cost: 'very-low' },
+  { pattern: /llama.*3.*405/i,         canonical: 'llama-3-405b',        family: 'meta',      tier: 'strong',   coding: 75, cost: 'low' },
+  { pattern: /llama.*3.*70/i,          canonical: 'llama-3-70b',         family: 'meta',      tier: 'fast',     coding: 65, cost: 'very-low' },
+  { pattern: /llama.*3.*8/i,           canonical: 'llama-3-8b',          family: 'meta',      tier: 'fast',     coding: 50, cost: 'very-low' },
+  // ── Mistral ───────────────────────────────────────────────────────────────
+  { pattern: /devstral.*medium/i,      canonical: 'devstral-medium',     family: 'mistral',   tier: 'strong',   coding: 82, cost: 'medium' },
+  { pattern: /devstral.*small/i,       canonical: 'devstral-small',      family: 'mistral',   tier: 'fast',     coding: 72, cost: 'low' },
+  { pattern: /devstral/i,              canonical: 'devstral',            family: 'mistral',   tier: 'strong',   coding: 78, cost: 'low' },
+  { pattern: /magistral.*medium/i,     canonical: 'magistral-medium',    family: 'mistral',   tier: 'strong',   coding: 75, cost: 'medium' },
+  { pattern: /magistral.*small/i,      canonical: 'magistral-small',     family: 'mistral',   tier: 'fast',     coding: 65, cost: 'low' },
+  { pattern: /mistral.*large/i,        canonical: 'mistral-large',       family: 'mistral',   tier: 'strong',   coding: 75, cost: 'medium' },
+  { pattern: /codestral/i,             canonical: 'codestral',           family: 'mistral',   tier: 'strong',   coding: 78, cost: 'low' },
+  { pattern: /ministral.*8/i,          canonical: 'ministral-8b',        family: 'mistral',   tier: 'fast',     coding: 55, cost: 'very-low' },
+  { pattern: /ministral.*3/i,          canonical: 'ministral-3b',        family: 'mistral',   tier: 'fast',     coding: 45, cost: 'very-low' },
+  // ── xAI / Grok ───────────────────────────────────────────────────────────
+  { pattern: /grok.*4/i,               canonical: 'grok-4',              family: 'xai',       tier: 'frontier', coding: 92, cost: 'high' },
+  { pattern: /grok.*3.*mini.*fast/i,   canonical: 'grok-3-mini-fast',   family: 'xai',       tier: 'fast',     coding: 70, cost: 'low' },
+  { pattern: /grok.*3.*mini/i,         canonical: 'grok-3-mini',        family: 'xai',       tier: 'fast',     coding: 72, cost: 'low' },
+  { pattern: /grok.*3.*fast/i,         canonical: 'grok-3-fast',        family: 'xai',       tier: 'strong',   coding: 82, cost: 'medium' },
+  { pattern: /grok.*3/i,               canonical: 'grok-3',             family: 'xai',       tier: 'strong',   coding: 85, cost: 'medium' },
+  { pattern: /grok.*2/i,               canonical: 'grok-2',             family: 'xai',       tier: 'strong',   coding: 75, cost: 'medium' },
+  // ── Cohere ────────────────────────────────────────────────────────────────
+  { pattern: /command.*a.*reason/i,    canonical: 'command-a-reasoning', family: 'cohere',    tier: 'strong',   coding: 78, cost: 'medium' },
+  { pattern: /command.*a/i,            canonical: 'command-a',           family: 'cohere',    tier: 'strong',   coding: 75, cost: 'medium' },
+  { pattern: /command.*r.*plus/i,      canonical: 'command-r-plus',     family: 'cohere',    tier: 'strong',   coding: 70, cost: 'medium' },
+  { pattern: /command.*r7b/i,          canonical: 'command-r7b',        family: 'cohere',    tier: 'fast',     coding: 55, cost: 'very-low' },
+  { pattern: /command.*r\b/i,          canonical: 'command-r',          family: 'cohere',    tier: 'fast',     coding: 60, cost: 'low' },
+  // ── Perplexity ────────────────────────────────────────────────────────────
+  { pattern: /sonar.*deep/i,           canonical: 'sonar-deep-research', family: 'perplexity', tier: 'strong',  coding: 72, cost: 'medium' },
+  { pattern: /sonar.*pro/i,            canonical: 'sonar-pro',           family: 'perplexity', tier: 'strong',  coding: 68, cost: 'medium' },
+  { pattern: /sonar.*reason/i,         canonical: 'sonar-reasoning',     family: 'perplexity', tier: 'strong',  coding: 70, cost: 'medium' },
+  { pattern: /sonar/i,                 canonical: 'sonar',               family: 'perplexity', tier: 'fast',    coding: 60, cost: 'low' },
+  // ── Alibaba / Qwen ────────────────────────────────────────────────────────
+  { pattern: /qwen.*3.*235/i,          canonical: 'qwen-3-235b',        family: 'alibaba',   tier: 'strong',   coding: 80, cost: 'low' },
+  { pattern: /qwen.*3.*32/i,           canonical: 'qwen-3-32b',         family: 'alibaba',   tier: 'fast',     coding: 68, cost: 'very-low' },
+  { pattern: /qwen.*2\.?5.*coder/i,    canonical: 'qwen-2.5-coder',     family: 'alibaba',   tier: 'strong',   coding: 78, cost: 'low' },
+  { pattern: /qwen.*coder/i,           canonical: 'qwen-coder',         family: 'alibaba',   tier: 'strong',   coding: 75, cost: 'low' },
+  { pattern: /qwen/i,                  canonical: 'qwen',               family: 'alibaba',   tier: 'strong',   coding: 72, cost: 'low' },
+  // ── MiniMax ───────────────────────────────────────────────────────────────
+  { pattern: /minimax/i,               canonical: 'minimax',            family: 'minimax',   tier: 'strong',   coding: 70, cost: 'low' },
+  // ── ZhipuAI / GLM ────────────────────────────────────────────────────────
+  { pattern: /glm.*4/i,                canonical: 'glm-4',              family: 'zhipuai',   tier: 'strong',   coding: 72, cost: 'low' },
+  // ── Nvidia / Nemotron ─────────────────────────────────────────────────────
+  { pattern: /nemotron/i,              canonical: 'nemotron',           family: 'nvidia',    tier: 'strong',   coding: 70, cost: 'low' },
+  // ── Moonshot / Kimi ───────────────────────────────────────────────────────
+  { pattern: /kimi|moonshot/i,         canonical: 'kimi',               family: 'moonshot',  tier: 'strong',   coding: 68, cost: 'low' },
+  // ── Cerebras ──────────────────────────────────────────────────────────────
+  { pattern: /cerebras/i,              canonical: 'cerebras',           family: 'cerebras',  tier: 'fast',     coding: 65, cost: 'low' },
+  // ── StepFun ───────────────────────────────────────────────────────────────
+  { pattern: /step/i,                  canonical: 'step',               family: 'stepfun',   tier: 'strong',   coding: 65, cost: 'low' },
+  // ── Inception / Mercury ───────────────────────────────────────────────────
+  { pattern: /mercury/i,               canonical: 'mercury',            family: 'inception',  tier: 'strong',  coding: 72, cost: 'low' },
 ];
 
 const COST_LABELS = { 'very-low': '$', 'low': '$$', 'medium': '$$$', 'high': '$$$$', 'very-high': '$$$$$' };
