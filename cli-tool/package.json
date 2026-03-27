@@ -1,14 +1,19 @@
 {
-  "name": "opencode-advanced-setup",
+  "name": "@weisser-dev/opencode-advanced",
   "version": "0.1.0",
   "description": "Interactive CLI to set up OpenCode best practices: agents, skills, model optimization, and configs",
   "type": "module",
   "bin": {
-    "opencode-advanced-setup": "./src/index.js"
+    "opencode-advanced": "./src/index.js"
   },
+  "files": [
+    "src/",
+    "templates/"
+  ],
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "prepublishOnly": "node scripts/sync-templates.js"
   },
   "keywords": [
     "opencode",
@@ -17,13 +22,20 @@
     "skills",
     "cli",
     "setup",
-    "best-practices"
+    "best-practices",
+    "llm",
+    "mcp"
   ],
   "author": "weisser-dev",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/weisser-dev/opencode-best-practices"
+    "url": "https://github.com/weisser-dev/opencode-best-practices",
+    "directory": "cli-tool"
+  },
+  "homepage": "https://github.com/weisser-dev/opencode-best-practices#readme",
+  "bugs": {
+    "url": "https://github.com/weisser-dev/opencode-best-practices/issues"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.0.0",
@@ -32,5 +44,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
