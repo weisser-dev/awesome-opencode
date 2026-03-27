@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
+import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
 
 async function main() {
   try {
@@ -68,8 +68,12 @@ async function runFullSetup() {
   const agents = await promptAgents(project);
   const skills = await promptSkills(project);
   const modelConfig = await promptModels(project);
+
+  // MCP: curated list + optional registry search
   const mcpConfig = await promptMcp(project);
-  await generateFiles({ project, agents, skills, modelConfig, mcpConfig });
+  const mcpSearchResults = await promptMcpSearch(mcpConfig);
+
+  await generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults });
   await promptAgentsMd({ project, agents, skills, modelConfig });
   outro();
   await launchOpenCode();

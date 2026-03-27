@@ -432,36 +432,133 @@ export async function detectProject() {
 // ─── Agent Selection ────────────────────────────────────────────────────────
 
 const AVAILABLE_AGENTS = [
-  // Core
-  { name: 'code-reviewer',         value: 'code-reviewer',         description: 'Code review with security & performance focus',           category: 'Core' },
-  { name: 'docs-writer',           value: 'docs-writer',           description: 'Technical documentation writer',                          category: 'Core' },
-  { name: 'security-auditor',      value: 'security-auditor',      description: 'Security vulnerability scanner',                          category: 'Core' },
-  { name: 'debugger',              value: 'debugger',              description: 'Bug investigation and root cause analysis',               category: 'Core' },
-  { name: 'refactorer',            value: 'refactorer',            description: 'Code refactoring with test verification',                 category: 'Core' },
-  { name: 'test-writer',           value: 'test-writer',           description: 'Test generation following project patterns',              category: 'Core' },
-  // Development
-  { name: 'api-designer',          value: 'api-designer',          description: 'REST/GraphQL API design and contract definition',         category: 'Development' },
-  { name: 'microservices-architect', value: 'microservices-architect', description: 'Microservices design, boundaries, and communication', category: 'Development' },
-  { name: 'architect-reviewer',    value: 'architect-reviewer',    description: 'Architecture review and design pattern evaluation',       category: 'Development' },
-  // Quality
-  { name: 'performance-engineer',  value: 'performance-engineer',  description: 'Performance profiling and optimization guidance',         category: 'Quality' },
-  { name: 'accessibility-tester',  value: 'accessibility-tester',  description: 'WCAG compliance and accessibility audit',                 category: 'Quality' },
-  { name: 'compliance-auditor',    value: 'compliance-auditor',    description: 'Regulatory compliance checks (GDPR, SOC2, HIPAA)',        category: 'Quality' },
-  { name: 'chaos-engineer',        value: 'chaos-engineer',        description: 'Failure mode analysis and resilience testing',            category: 'Quality' },
-  // Infrastructure
-  { name: 'devops-engineer',       value: 'devops-engineer',       description: 'CI/CD pipelines, infrastructure, and deployment',         category: 'Infrastructure' },
-  { name: 'docker-expert',         value: 'docker-expert',         description: 'Docker optimization, multi-stage builds, and security',   category: 'Infrastructure' },
-  { name: 'sre-engineer',          value: 'sre-engineer',          description: 'Site reliability, monitoring, and incident response',     category: 'Infrastructure' },
-  // Data
-  { name: 'database-optimizer',    value: 'database-optimizer',    description: 'Query optimization, indexing, and schema design',         category: 'Data' },
-  // Productivity
-  { name: 'dependency-manager',    value: 'dependency-manager',    description: 'Dependency updates, audit, and compatibility checks',     category: 'Productivity' },
-  { name: 'git-workflow-manager',  value: 'git-workflow-manager',  description: 'Git workflow, branching strategy, and commit hygiene',    category: 'Productivity' },
-  { name: 'legacy-modernizer',     value: 'legacy-modernizer',     description: 'Legacy code modernization and migration planning',        category: 'Productivity' },
-  { name: 'error-detective',       value: 'error-detective',       description: 'Error pattern analysis and root cause detection',         category: 'Productivity' },
-  // Orchestration
-  { name: 'context-manager',       value: 'context-manager',       description: 'Project context loading and memory management',           category: 'Orchestration' },
-  { name: 'workflow-orchestrator',  value: 'workflow-orchestrator', description: 'Multi-agent task orchestration and workflow coordination', category: 'Orchestration' },
+  // ── Core Development ──────────────────────────────────────────────────────
+  { name: 'api-designer', value: 'api-designer', description: 'REST/GraphQL API design and contract definition', category: 'Core Development' },
+  { name: 'backend-developer', value: 'backend-developer', description: 'Server-side logic, APIs, and data processing', category: 'Core Development' },
+  { name: 'frontend-developer', value: 'frontend-developer', description: 'UI implementation, components, and browser APIs', category: 'Core Development' },
+  { name: 'fullstack-developer', value: 'fullstack-developer', description: 'End-to-end feature development across the stack', category: 'Core Development' },
+  { name: 'graphql-architect', value: 'graphql-architect', description: 'GraphQL schema design, resolvers, and federation', category: 'Core Development' },
+  { name: 'microservices-architect', value: 'microservices-architect', description: 'Microservices design, boundaries, and communication', category: 'Core Development' },
+  { name: 'mobile-developer', value: 'mobile-developer', description: 'Native and cross-platform mobile app development', category: 'Core Development' },
+  { name: 'websocket-engineer', value: 'websocket-engineer', description: 'Real-time communication and WebSocket protocol design', category: 'Core Development' },
+
+  // ── Language Specialists ───────────────────────────────────────────────────
+  { name: 'typescript-pro', value: 'typescript-pro', description: 'TypeScript type system, generics, and advanced patterns', category: 'Language Specialists' },
+  { name: 'javascript-pro', value: 'javascript-pro', description: 'Modern JavaScript, ES modules, and runtime optimization', category: 'Language Specialists' },
+  { name: 'python-pro', value: 'python-pro', description: 'Pythonic patterns, async, and ecosystem best practices', category: 'Language Specialists' },
+  { name: 'java-architect', value: 'java-architect', description: 'Java architecture, JVM tuning, and enterprise patterns', category: 'Language Specialists' },
+  { name: 'kotlin-specialist', value: 'kotlin-specialist', description: 'Kotlin idioms, coroutines, and multiplatform development', category: 'Language Specialists' },
+  { name: 'golang-pro', value: 'golang-pro', description: 'Go concurrency, interfaces, and systems programming', category: 'Language Specialists' },
+  { name: 'rust-engineer', value: 'rust-engineer', description: 'Rust ownership, lifetimes, and zero-cost abstractions', category: 'Language Specialists' },
+  { name: 'swift-expert', value: 'swift-expert', description: 'Swift protocols, concurrency, and Apple platform APIs', category: 'Language Specialists' },
+  { name: 'cpp-pro', value: 'cpp-pro', description: 'Modern C++ patterns, templates, and memory management', category: 'Language Specialists' },
+  { name: 'csharp-developer', value: 'csharp-developer', description: 'C# and .NET ecosystem, LINQ, and async patterns', category: 'Language Specialists' },
+  { name: 'php-pro', value: 'php-pro', description: 'Modern PHP, Composer, and framework best practices', category: 'Language Specialists' },
+  { name: 'ruby-pro', value: 'ruby-pro', description: 'Ruby idioms, metaprogramming, and gem ecosystem', category: 'Language Specialists' },
+  { name: 'react-specialist', value: 'react-specialist', description: 'React hooks, state management, and component design', category: 'Language Specialists' },
+  { name: 'vue-expert', value: 'vue-expert', description: 'Vue 3 composition API, reactivity, and ecosystem', category: 'Language Specialists' },
+  { name: 'angular-architect', value: 'angular-architect', description: 'Angular modules, RxJS, and enterprise-scale SPAs', category: 'Language Specialists' },
+  { name: 'nextjs-developer', value: 'nextjs-developer', description: 'Next.js App Router, SSR, RSC, and deployment', category: 'Language Specialists' },
+  { name: 'django-developer', value: 'django-developer', description: 'Django ORM, views, middleware, and admin patterns', category: 'Language Specialists' },
+  { name: 'fastapi-developer', value: 'fastapi-developer', description: 'FastAPI async endpoints, Pydantic, and OpenAPI', category: 'Language Specialists' },
+  { name: 'spring-boot-engineer', value: 'spring-boot-engineer', description: 'Spring Boot auto-config, DI, and reactive stack', category: 'Language Specialists' },
+  { name: 'laravel-specialist', value: 'laravel-specialist', description: 'Laravel Eloquent, Blade, queues, and artisan', category: 'Language Specialists' },
+  { name: 'flutter-expert', value: 'flutter-expert', description: 'Flutter widgets, state management, and platform channels', category: 'Language Specialists' },
+  { name: 'elixir-expert', value: 'elixir-expert', description: 'Elixir OTP, GenServer, and Phoenix LiveView', category: 'Language Specialists' },
+
+  // ── Infrastructure ─────────────────────────────────────────────────────────
+  { name: 'azure-infra-engineer', value: 'azure-infra-engineer', description: 'Azure services, ARM/Bicep templates, and cloud networking', category: 'Infrastructure' },
+  { name: 'cloud-architect', value: 'cloud-architect', description: 'Multi-cloud architecture, cost optimization, and resilience', category: 'Infrastructure' },
+  { name: 'database-administrator', value: 'database-administrator', description: 'Database provisioning, replication, and backup strategy', category: 'Infrastructure' },
+  { name: 'deployment-engineer', value: 'deployment-engineer', description: 'Deployment strategies, blue-green, canary, and rollbacks', category: 'Infrastructure' },
+  { name: 'devops-engineer', value: 'devops-engineer', description: 'CI/CD pipelines, infrastructure, and deployment', category: 'Infrastructure' },
+  { name: 'docker-expert', value: 'docker-expert', description: 'Docker optimization, multi-stage builds, and security', category: 'Infrastructure' },
+  { name: 'incident-responder', value: 'incident-responder', description: 'Incident triage, mitigation, and post-mortem coordination', category: 'Infrastructure' },
+  { name: 'kubernetes-specialist', value: 'kubernetes-specialist', description: 'Kubernetes orchestration, Helm charts, and cluster ops', category: 'Infrastructure' },
+  { name: 'network-engineer', value: 'network-engineer', description: 'Network topology, DNS, load balancing, and firewalls', category: 'Infrastructure' },
+  { name: 'platform-engineer', value: 'platform-engineer', description: 'Internal developer platforms and self-service tooling', category: 'Infrastructure' },
+  { name: 'security-engineer', value: 'security-engineer', description: 'Infrastructure security, IAM policies, and secrets management', category: 'Infrastructure' },
+  { name: 'sre-engineer', value: 'sre-engineer', description: 'Site reliability, monitoring, and incident response', category: 'Infrastructure' },
+  { name: 'terraform-engineer', value: 'terraform-engineer', description: 'Terraform modules, state management, and IaC workflows', category: 'Infrastructure' },
+
+  // ── Quality & Security ─────────────────────────────────────────────────────
+  { name: 'accessibility-tester', value: 'accessibility-tester', description: 'WCAG compliance and accessibility audit', category: 'Quality & Security' },
+  { name: 'architect-reviewer', value: 'architect-reviewer', description: 'Architecture review and design pattern evaluation', category: 'Quality & Security' },
+  { name: 'chaos-engineer', value: 'chaos-engineer', description: 'Failure mode analysis and resilience testing', category: 'Quality & Security' },
+  { name: 'code-reviewer', value: 'code-reviewer', description: 'Code review with security and performance focus', category: 'Quality & Security' },
+  { name: 'compliance-auditor', value: 'compliance-auditor', description: 'Regulatory compliance checks (GDPR, SOC2, HIPAA)', category: 'Quality & Security' },
+  { name: 'debugger', value: 'debugger', description: 'Bug investigation and root cause analysis', category: 'Quality & Security' },
+  { name: 'error-detective', value: 'error-detective', description: 'Error pattern analysis and root cause detection', category: 'Quality & Security' },
+  { name: 'penetration-tester', value: 'penetration-tester', description: 'Offensive security testing and vulnerability exploitation', category: 'Quality & Security' },
+  { name: 'performance-engineer', value: 'performance-engineer', description: 'Performance profiling and optimization guidance', category: 'Quality & Security' },
+  { name: 'security-auditor', value: 'security-auditor', description: 'Security vulnerability scanning and threat modeling', category: 'Quality & Security' },
+  { name: 'test-automator', value: 'test-automator', description: 'End-to-end test automation and CI test pipelines', category: 'Quality & Security' },
+
+  // ── Data & AI ──────────────────────────────────────────────────────────────
+  { name: 'ai-engineer', value: 'ai-engineer', description: 'AI system design, model integration, and inference pipelines', category: 'Data & AI' },
+  { name: 'data-analyst', value: 'data-analyst', description: 'Data exploration, visualization, and statistical analysis', category: 'Data & AI' },
+  { name: 'data-engineer', value: 'data-engineer', description: 'Data pipelines, ETL workflows, and warehouse design', category: 'Data & AI' },
+  { name: 'data-scientist', value: 'data-scientist', description: 'Statistical modeling, experiments, and feature engineering', category: 'Data & AI' },
+  { name: 'database-optimizer', value: 'database-optimizer', description: 'Query optimization, indexing, and schema design', category: 'Data & AI' },
+  { name: 'llm-architect', value: 'llm-architect', description: 'LLM application architecture, RAG, and fine-tuning', category: 'Data & AI' },
+  { name: 'machine-learning-engineer', value: 'machine-learning-engineer', description: 'ML model training, evaluation, and deployment', category: 'Data & AI' },
+  { name: 'mlops-engineer', value: 'mlops-engineer', description: 'ML pipeline orchestration, model registry, and monitoring', category: 'Data & AI' },
+  { name: 'nlp-engineer', value: 'nlp-engineer', description: 'Natural language processing, tokenization, and text analysis', category: 'Data & AI' },
+  { name: 'postgres-pro', value: 'postgres-pro', description: 'PostgreSQL tuning, extensions, and advanced SQL', category: 'Data & AI' },
+  { name: 'prompt-engineer', value: 'prompt-engineer', description: 'Prompt design, chain-of-thought, and LLM optimization', category: 'Data & AI' },
+  { name: 'sql-pro', value: 'sql-pro', description: 'Advanced SQL queries, window functions, and optimization', category: 'Data & AI' },
+
+  // ── Developer Experience ───────────────────────────────────────────────────
+  { name: 'build-engineer', value: 'build-engineer', description: 'Build system configuration, caching, and optimization', category: 'Developer Experience' },
+  { name: 'cli-developer', value: 'cli-developer', description: 'CLI tool design, argument parsing, and UX patterns', category: 'Developer Experience' },
+  { name: 'dependency-manager', value: 'dependency-manager', description: 'Dependency updates, audit, and compatibility checks', category: 'Developer Experience' },
+  { name: 'docs-writer', value: 'docs-writer', description: 'Technical documentation and API reference writing', category: 'Developer Experience' },
+  { name: 'dx-optimizer', value: 'dx-optimizer', description: 'Developer experience improvement and workflow friction reduction', category: 'Developer Experience' },
+  { name: 'git-workflow-manager', value: 'git-workflow-manager', description: 'Git workflow, branching strategy, and commit hygiene', category: 'Developer Experience' },
+  { name: 'legacy-modernizer', value: 'legacy-modernizer', description: 'Legacy code modernization and migration planning', category: 'Developer Experience' },
+  { name: 'mcp-developer', value: 'mcp-developer', description: 'MCP server development and tool integration', category: 'Developer Experience' },
+  { name: 'refactorer', value: 'refactorer', description: 'Code refactoring with test verification', category: 'Developer Experience' },
+  { name: 'test-writer', value: 'test-writer', description: 'Test generation following project patterns', category: 'Developer Experience' },
+  { name: 'tooling-engineer', value: 'tooling-engineer', description: 'Developer tooling, linters, formatters, and IDE config', category: 'Developer Experience' },
+
+  // ── Specialized Domains ────────────────────────────────────────────────────
+  { name: 'blockchain-developer', value: 'blockchain-developer', description: 'Smart contracts, DeFi protocols, and chain integration', category: 'Specialized Domains' },
+  { name: 'embedded-systems', value: 'embedded-systems', description: 'Firmware, RTOS, and hardware interface programming', category: 'Specialized Domains' },
+  { name: 'fintech-engineer', value: 'fintech-engineer', description: 'Financial systems, ledgers, and regulatory compliance', category: 'Specialized Domains' },
+  { name: 'game-developer', value: 'game-developer', description: 'Game engine integration, physics, and rendering pipelines', category: 'Specialized Domains' },
+  { name: 'iot-engineer', value: 'iot-engineer', description: 'IoT protocols, edge computing, and device management', category: 'Specialized Domains' },
+  { name: 'mobile-app-developer', value: 'mobile-app-developer', description: 'Mobile UI/UX, app lifecycle, and platform guidelines', category: 'Specialized Domains' },
+  { name: 'payment-integration', value: 'payment-integration', description: 'Payment gateway integration, PCI compliance, and billing', category: 'Specialized Domains' },
+  { name: 'seo-specialist', value: 'seo-specialist', description: 'Technical SEO, structured data, and web performance', category: 'Specialized Domains' },
+
+  // ── Business & Product ─────────────────────────────────────────────────────
+  { name: 'business-analyst', value: 'business-analyst', description: 'Requirements gathering, process modeling, and stakeholder analysis', category: 'Business & Product' },
+  { name: 'content-marketer', value: 'content-marketer', description: 'Content strategy, copywriting, and brand messaging', category: 'Business & Product' },
+  { name: 'legal-advisor', value: 'legal-advisor', description: 'Software licensing, ToS review, and IP guidance', category: 'Business & Product' },
+  { name: 'product-manager', value: 'product-manager', description: 'Product roadmap, prioritization, and feature scoping', category: 'Business & Product' },
+  { name: 'project-manager', value: 'project-manager', description: 'Project planning, timelines, and resource coordination', category: 'Business & Product' },
+  { name: 'sales-engineer', value: 'sales-engineer', description: 'Technical demos, proof-of-concept, and solution design', category: 'Business & Product' },
+  { name: 'scrum-master', value: 'scrum-master', description: 'Agile ceremonies, sprint planning, and team facilitation', category: 'Business & Product' },
+  { name: 'technical-writer', value: 'technical-writer', description: 'User guides, tutorials, and knowledge base articles', category: 'Business & Product' },
+  { name: 'ux-researcher', value: 'ux-researcher', description: 'User research, usability testing, and persona development', category: 'Business & Product' },
+
+  // ── Meta & Orchestration ───────────────────────────────────────────────────
+  { name: 'agent-organizer', value: 'agent-organizer', description: 'Agent selection, routing, and capability mapping', category: 'Meta & Orchestration' },
+  { name: 'context-manager', value: 'context-manager', description: 'Project context loading and memory management', category: 'Meta & Orchestration' },
+  { name: 'error-coordinator', value: 'error-coordinator', description: 'Cross-agent error handling and recovery strategies', category: 'Meta & Orchestration' },
+  { name: 'knowledge-synthesizer', value: 'knowledge-synthesizer', description: 'Multi-source knowledge aggregation and summarization', category: 'Meta & Orchestration' },
+  { name: 'multi-agent-coordinator', value: 'multi-agent-coordinator', description: 'Parallel agent execution and result merging', category: 'Meta & Orchestration' },
+  { name: 'task-distributor', value: 'task-distributor', description: 'Task decomposition and delegation across agents', category: 'Meta & Orchestration' },
+  { name: 'workflow-orchestrator', value: 'workflow-orchestrator', description: 'Multi-agent task orchestration and workflow coordination', category: 'Meta & Orchestration' },
+
+  // ── Research & Analysis ────────────────────────────────────────────────────
+  { name: 'competitive-analyst', value: 'competitive-analyst', description: 'Competitive landscape analysis and feature benchmarking', category: 'Research & Analysis' },
+  { name: 'data-researcher', value: 'data-researcher', description: 'Data source discovery, collection, and quality assessment', category: 'Research & Analysis' },
+  { name: 'market-researcher', value: 'market-researcher', description: 'Market sizing, trends analysis, and opportunity mapping', category: 'Research & Analysis' },
+  { name: 'research-analyst', value: 'research-analyst', description: 'Technical research synthesis and recommendation reports', category: 'Research & Analysis' },
+  { name: 'scientific-literature-researcher', value: 'scientific-literature-researcher', description: 'Academic paper search, citation analysis, and review', category: 'Research & Analysis' },
+  { name: 'search-specialist', value: 'search-specialist', description: 'Search engine optimization and information retrieval', category: 'Research & Analysis' },
+  { name: 'trend-analyst', value: 'trend-analyst', description: 'Technology trend tracking and adoption forecasting', category: 'Research & Analysis' },
 ];
 
 const DEFAULT_AGENTS = new Set([
@@ -481,7 +578,7 @@ export async function promptAgents(project) {
   if (!install) return [];
 
   // Build choices grouped by category with separators
-  const categories = ['Core', 'Development', 'Quality', 'Infrastructure', 'Data', 'Productivity', 'Orchestration'];
+  const categories = ['Core Development', 'Language Specialists', 'Infrastructure', 'Quality & Security', 'Data & AI', 'Developer Experience', 'Specialized Domains', 'Business & Product', 'Meta & Orchestration', 'Research & Analysis'];
   const choices = [];
 
   for (const category of categories) {
@@ -554,7 +651,128 @@ export async function promptSkills(project) {
   return selected;
 }
 
-// ─── Model Optimization ─────────────────────────────────────────────────────
+// ─── Model Intelligence ─────────────────────────────────────────────────────
+// Model fingerprinting, pricing tiers, and agent-aware optimization.
+// Rankings based on LiveCodeBench, Aider, MMLU-Pro benchmarks + pricing data.
+// Source: pricepertoken.com/leaderboards/coding, openrouter.ai
+
+// Known model fingerprints -- maps regex patterns to canonical model info.
+// This allows recognizing models even through custom providers (e.g. Bedrock, Azure).
+const MODEL_FINGERPRINTS = [
+  // Anthropic
+  { pattern: /claude.*opus.*4/i,      canonical: 'claude-opus-4',     family: 'anthropic', tier: 'frontier', coding: 95, cost: 'high' },
+  { pattern: /claude.*sonnet.*4/i,    canonical: 'claude-sonnet-4',   family: 'anthropic', tier: 'strong',   coding: 90, cost: 'medium' },
+  { pattern: /claude.*haiku.*4/i,     canonical: 'claude-haiku-4',    family: 'anthropic', tier: 'fast',     coding: 75, cost: 'low' },
+  { pattern: /claude.*opus.*3/i,      canonical: 'claude-opus-3',     family: 'anthropic', tier: 'strong',   coding: 80, cost: 'high' },
+  { pattern: /claude.*sonnet.*3/i,    canonical: 'claude-sonnet-3',   family: 'anthropic', tier: 'strong',   coding: 78, cost: 'medium' },
+  { pattern: /claude.*haiku.*3/i,     canonical: 'claude-haiku-3',    family: 'anthropic', tier: 'fast',     coding: 60, cost: 'low' },
+  // OpenAI
+  { pattern: /gpt.*5\.?2/i,          canonical: 'gpt-5.2',           family: 'openai',    tier: 'frontier', coding: 93, cost: 'high' },
+  { pattern: /gpt.*5\.?1.*codex/i,   canonical: 'gpt-5.1-codex',     family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
+  { pattern: /gpt.*5\.?1/i,          canonical: 'gpt-5.1',           family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
+  { pattern: /gpt.*5/i,              canonical: 'gpt-5',             family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
+  { pattern: /gpt.*4o[\b-]/i,        canonical: 'gpt-4o',            family: 'openai',    tier: 'strong',   coding: 80, cost: 'medium' },
+  { pattern: /gpt.*4o.*mini/i,       canonical: 'gpt-4o-mini',       family: 'openai',    tier: 'fast',     coding: 65, cost: 'low' },
+  { pattern: /o3/i,                   canonical: 'o3',                family: 'openai',    tier: 'frontier', coding: 96, cost: 'very-high' },
+  { pattern: /o4.*mini/i,            canonical: 'o4-mini',            family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
+  // Google
+  { pattern: /gemini.*3.*pro/i,      canonical: 'gemini-3-pro',      family: 'google',    tier: 'strong',   coding: 82, cost: 'medium' },
+  { pattern: /gemini.*2\.?5.*pro/i,  canonical: 'gemini-2.5-pro',    family: 'google',    tier: 'strong',   coding: 80, cost: 'medium' },
+  { pattern: /gemini.*2\.?5.*flash/i,canonical: 'gemini-2.5-flash',  family: 'google',    tier: 'fast',     coding: 72, cost: 'low' },
+  { pattern: /gemini.*2.*flash/i,    canonical: 'gemini-2-flash',    family: 'google',    tier: 'fast',     coding: 68, cost: 'low' },
+  // DeepSeek
+  { pattern: /deepseek.*v3/i,        canonical: 'deepseek-v3',       family: 'deepseek',  tier: 'strong',   coding: 82, cost: 'low' },
+  { pattern: /deepseek.*r1/i,        canonical: 'deepseek-r1',       family: 'deepseek',  tier: 'strong',   coding: 85, cost: 'low' },
+  // Meta
+  { pattern: /llama.*4.*maverick/i,  canonical: 'llama-4-maverick',  family: 'meta',      tier: 'strong',   coding: 78, cost: 'low' },
+  { pattern: /llama.*4.*scout/i,     canonical: 'llama-4-scout',     family: 'meta',      tier: 'fast',     coding: 70, cost: 'very-low' },
+  { pattern: /llama.*3.*405/i,       canonical: 'llama-3-405b',      family: 'meta',      tier: 'strong',   coding: 75, cost: 'low' },
+  { pattern: /llama.*3.*70/i,        canonical: 'llama-3-70b',       family: 'meta',      tier: 'fast',     coding: 65, cost: 'very-low' },
+  // Mistral
+  { pattern: /mistral.*large/i,      canonical: 'mistral-large',     family: 'mistral',   tier: 'strong',   coding: 75, cost: 'medium' },
+  { pattern: /codestral/i,           canonical: 'codestral',         family: 'mistral',   tier: 'strong',   coding: 78, cost: 'low' },
+];
+
+const COST_LABELS = { 'very-low': '$', 'low': '$$', 'medium': '$$$', 'high': '$$$$', 'very-high': '$$$$$' };
+const TIER_LABELS = { 'frontier': 'Frontier (best quality)', 'strong': 'Strong (good balance)', 'fast': 'Fast (cheap & quick)' };
+
+/**
+ * Given a model ID string (possibly from a custom provider like "eu.anthropic.claude-sonnet-4-6"),
+ * try to match it to a known model family and return its info.
+ */
+function fingerprintModel(modelId) {
+  if (!modelId) return null;
+  for (const fp of MODEL_FINGERPRINTS) {
+    if (fp.pattern.test(modelId)) {
+      return { ...fp, originalId: modelId };
+    }
+  }
+  return { originalId: modelId, canonical: modelId, family: 'unknown', tier: 'unknown', coding: 0, cost: 'unknown' };
+}
+
+/**
+ * Scan an opencode.json config for all model references (top-level + per-agent)
+ * and return a deduplicated list of fingerprinted models.
+ */
+function detectModelsInConfig(config) {
+  if (!config) return [];
+  const modelIds = new Set();
+
+  if (config.model) modelIds.add(config.model);
+  if (config.small_model) modelIds.add(config.small_model);
+
+  // Scan providers for custom model definitions
+  if (config.provider) {
+    for (const [providerName, providerConfig] of Object.entries(config.provider)) {
+      if (providerConfig.models) {
+        for (const [modelKey, modelDef] of Object.entries(providerConfig.models)) {
+          // Use the provider/model key format
+          modelIds.add(`${providerName}/${modelKey}`);
+        }
+      }
+    }
+  }
+
+  // Scan agents for model references
+  if (config.agent) {
+    for (const [agentName, agentConfig] of Object.entries(config.agent)) {
+      if (agentConfig.model) modelIds.add(agentConfig.model);
+    }
+  }
+
+  return [...modelIds].map(id => fingerprintModel(id)).filter(Boolean);
+}
+
+// Agent tiers: which agents need which model quality
+// frontier = complex reasoning, code generation, architecture
+// strong   = good balance of speed and quality
+// fast     = read-only, exploration, simple tasks
+const AGENT_TIERS = {
+  // Primary agents
+  build:   'frontier',
+  plan:    'fast',
+  // Subagents that WRITE code
+  'backend-developer': 'frontier', 'frontend-developer': 'frontier', 'fullstack-developer': 'frontier',
+  'api-designer': 'strong', 'graphql-architect': 'strong', 'microservices-architect': 'strong',
+  'refactorer': 'strong', 'test-writer': 'strong', 'test-automator': 'strong',
+  // Language specialists
+  'typescript-pro': 'frontier', 'javascript-pro': 'frontier', 'python-pro': 'frontier',
+  'java-architect': 'frontier', 'rust-engineer': 'frontier', 'golang-pro': 'frontier',
+  'react-specialist': 'strong', 'nextjs-developer': 'strong', 'vue-expert': 'strong',
+  'spring-boot-engineer': 'strong', 'django-developer': 'strong', 'fastapi-developer': 'strong',
+  // READ-ONLY / analysis agents
+  'code-reviewer': 'strong', 'architect-reviewer': 'strong', 'security-auditor': 'strong',
+  'performance-engineer': 'strong', 'compliance-auditor': 'strong',
+  'debugger': 'strong', 'error-detective': 'strong',
+  'penetration-tester': 'strong',
+  // Cheap/fast agents
+  'docs-writer': 'fast', 'technical-writer': 'fast',
+  'context-manager': 'fast', 'task-distributor': 'fast',
+  'search-specialist': 'fast', 'research-analyst': 'fast',
+  'dependency-manager': 'fast', 'git-workflow-manager': 'fast',
+  // Default for unlisted agents
+  '_default': 'strong',
+};
 
 const MODEL_PRESETS = {
   'cost-optimized': {
@@ -607,30 +825,94 @@ const MODEL_PRESETS = {
 };
 
 export async function promptModels(project) {
-  const choices = Object.entries(MODEL_PRESETS).map(([key, preset]) => ({
-    name: preset.label,
-    value: key,
-  }));
+  const config = project.existingConfig;
 
-  // If existing config has a model, suggest keeping it
-  if (project.existingConfig?.model) {
-    console.log(chalk.gray(`  Current model: ${project.existingConfig.model}`));
+  // ── Detect models in existing config ─────────────────────────────────────
+  const detectedModels = detectModelsInConfig(config);
+  const knownModels = detectedModels.filter(m => m.family !== 'unknown');
+  const unknownModels = detectedModels.filter(m => m.family === 'unknown');
 
-    // Check if they could save money
-    const currentModel = project.existingConfig.model;
-    if (currentModel.includes('opus') || currentModel.includes('gpt-5.2')) {
-      console.log(chalk.yellow('  Tip: You could save costs by using Haiku for Plan/Explore agents'));
+  if (detectedModels.length > 0) {
+    console.log(chalk.bold('  Models found in your config:'));
+    console.log('');
+
+    for (const m of detectedModels) {
+      const tierLabel = TIER_LABELS[m.tier] || m.tier;
+      const costLabel = COST_LABELS[m.cost] || m.cost;
+      const codingScore = m.coding > 0 ? ` | Coding: ${m.coding}/100` : '';
+      if (m.family !== 'unknown') {
+        console.log(chalk.green(`    ${m.originalId}`));
+        console.log(chalk.gray(`      -> ${m.canonical} (${m.family}) | ${tierLabel} | Cost: ${costLabel}${codingScore}`));
+      } else {
+        console.log(chalk.yellow(`    ${m.originalId}`));
+        console.log(chalk.gray(`      -> Unknown model (cannot determine tier/pricing)`));
+      }
     }
     console.log('');
+
+    // Optimization suggestions
+    if (knownModels.length > 0) {
+      const allFrontier = knownModels.every(m => m.tier === 'frontier' || m.cost === 'high' || m.cost === 'very-high');
+      const noFastModel = !knownModels.some(m => m.tier === 'fast');
+
+      if (allFrontier) {
+        console.log(chalk.yellow('  Tip: All your models are frontier-tier. You could save significantly'));
+        console.log(chalk.yellow('  by using a fast/cheap model for Plan, Explore, and read-only agents.'));
+        console.log('');
+      } else if (noFastModel) {
+        console.log(chalk.yellow('  Tip: Consider adding a fast/cheap model (Haiku, GPT-4o-mini, Gemini Flash)'));
+        console.log(chalk.yellow('  for Plan/Explore agents and system tasks (title, summary).'));
+        console.log('');
+      }
+    }
+  }
+
+  // ── Build choices ────────────────────────────────────────────────────────
+
+  const choices = [];
+
+  // If we detected known models, offer to auto-optimize with THOSE models
+  if (knownModels.length >= 2) {
+    const frontier = knownModels.filter(m => m.tier === 'frontier').sort((a, b) => b.coding - a.coding)[0];
+    const strong = knownModels.filter(m => m.tier === 'strong').sort((a, b) => b.coding - a.coding)[0];
+    const fast = knownModels.filter(m => m.tier === 'fast').sort((a, b) => b.coding - a.coding)[0];
+    const best = frontier || strong || knownModels[0];
+    const cheapest = fast || strong || knownModels[knownModels.length - 1];
+
+    if (best && cheapest && best.originalId !== cheapest.originalId) {
+      choices.push({
+        name: `Auto-optimize YOUR models (Build: ${best.canonical}, Plan/Explore: ${cheapest.canonical})`,
+        value: 'auto',
+        _custom: {
+          model: best.originalId,
+          small_model: cheapest.originalId,
+          agents: {
+            build: { model: best.originalId },
+            plan: { model: cheapest.originalId },
+            explore: { model: cheapest.originalId },
+            general: { model: (strong || cheapest).originalId },
+          },
+        },
+      });
+    }
+  }
+
+  // Standard presets
+  for (const [key, preset] of Object.entries(MODEL_PRESETS)) {
+    choices.push({ name: preset.label, value: key });
   }
 
   const selected = await select({
     message: 'Model strategy:',
     choices,
-    default: project.hasOpenCodeConfig ? 'keep' : 'cost-optimized',
+    default: choices[0]?.value === 'auto' ? 'auto' : (project.hasOpenCodeConfig ? 'keep' : 'cost-optimized'),
   });
 
   if (selected === 'keep') return null;
+  if (selected === 'auto') {
+    const autoConfig = choices.find(c => c.value === 'auto')._custom;
+    return autoConfig;
+  }
   return MODEL_PRESETS[selected];
 }
 
@@ -849,9 +1131,118 @@ export async function promptMcp(project) {
   return selected;
 }
 
+// ─── MCP Registry Search ────────────────────────────────────────────────────
+
+const MCP_REGISTRY_URL = 'https://registry.modelcontextprotocol.io/v0/servers';
+
+async function searchMcpRegistry(query) {
+  const { default: fetch } = await import('node-fetch').catch(() => {
+    // Fallback to global fetch (Node 18+)
+    return { default: globalThis.fetch };
+  });
+
+  try {
+    const res = await fetch(`${MCP_REGISTRY_URL}?q=${encodeURIComponent(query)}&limit=30`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.servers) return [];
+
+    // Deduplicate by name (keep latest version)
+    const seen = new Map();
+    for (const entry of data.servers) {
+      const s = entry.server;
+      const meta = entry._meta?.['io.modelcontextprotocol.registry/official'];
+      if (!meta?.isLatest) continue;
+      if (seen.has(s.name)) continue;
+
+      const remote = s.remotes?.[0];
+      const pkg = s.packages?.[0];
+
+      let config = null;
+      if (remote?.url) {
+        config = { type: 'remote', url: remote.url };
+        if (remote.headers?.length > 0) {
+          config.headers = {};
+          for (const h of remote.headers) {
+            config.headers[h.name] = h.isSecret ? `{env:${h.name.replace(/-/g, '_').toUpperCase()}}` : '';
+          }
+        }
+      } else if (pkg?.identifier) {
+        if (pkg.registryType === 'npm') {
+          config = { type: 'local', command: ['npx', '-y', pkg.identifier] };
+        }
+      }
+
+      if (!config) continue;
+
+      seen.set(s.name, {
+        name: s.name,
+        title: s.title || s.name.split('/').pop(),
+        description: (s.description || '').slice(0, 100),
+        version: s.version,
+        url: s.websiteUrl || '',
+        config,
+      });
+    }
+
+    return [...seen.values()];
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function promptMcpSearch(currentMcpSelections) {
+  const { input } = await import('@inquirer/prompts');
+
+  const doSearch = await confirm({
+    message: 'Search the official MCP Registry for more servers?',
+    default: false,
+  });
+
+  if (!doSearch) return [];
+
+  const query = await input({
+    message: 'Search MCP Registry (e.g. "database", "aws", "slack"):',
+  });
+
+  if (!query.trim()) return [];
+
+  const spinner = ora(`Searching MCP Registry for "${query}"...`).start();
+  const results = await searchMcpRegistry(query.trim());
+  spinner.stop();
+
+  if (results.length === 0) {
+    console.log(chalk.gray(`  No results found for "${query}".`));
+    console.log(chalk.gray(`  Browse manually: https://registry.modelcontextprotocol.io`));
+    console.log('');
+    return [];
+  }
+
+  console.log(chalk.gray(`  Found ${results.length} server(s):`));
+  console.log('');
+
+  const choices = results.map(r => ({
+    name: `${r.title} (${r.name}@${r.version}) - ${r.description}`,
+    value: r.name,
+  }));
+
+  const selected = await checkbox({
+    message: 'Select servers to add:',
+    choices,
+  });
+
+  // Return full config objects for selected servers
+  return selected.map(name => {
+    const server = results.find(r => r.name === name);
+    return { name: server.title || name, value: name, config: server.config };
+  });
+}
+
 // ─── File Generation ────────────────────────────────────────────────────────
 
-export async function generateFiles({ project, agents, skills, modelConfig, mcpConfig }) {
+export async function generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults = [] }) {
   const spinner = ora('Generating files...').start();
   const templateBase = getTemplateBase();
 
@@ -913,6 +1304,15 @@ export async function generateFiles({ project, agents, skills, modelConfig, mcpC
       if (mcpDef) {
         config.mcp[mcpName] = mcpDef.config;
       }
+    }
+  }
+
+  // Add MCP servers from registry search
+  if (mcpSearchResults.length > 0) {
+    if (!config.mcp) config.mcp = {};
+    for (const result of mcpSearchResults) {
+      const safeName = result.value.replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+      config.mcp[safeName] = result.config;
     }
   }
 
