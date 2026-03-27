@@ -405,7 +405,7 @@ export async function detectProject() {
   const choices = [];
 
   if (detectedCount > 0) {
-    choices.push({ type: 'separator', separator: chalk.bold.green(`── Detected (${detectedCount}) ──`) });
+    choices.push({ type: 'separator', separator: chalk.bold.green(`── Auto-Detected (${detectedCount}) ──`) });
     for (const lang of autoDetected) {
       const opt = LANGUAGE_OPTIONS.find(o => o.value === lang);
       if (opt) {
