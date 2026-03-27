@@ -1,0 +1,36 @@
+{
+  "name": "opencode-advanced-setup",
+  "version": "0.1.0",
+  "description": "Interactive CLI to set up OpenCode best practices: agents, skills, model optimization, and configs",
+  "type": "module",
+  "bin": {
+    "opencode-advanced-setup": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "opencode",
+    "ai",
+    "agents",
+    "skills",
+    "cli",
+    "setup",
+    "best-practices"
+  ],
+  "author": "weisser-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/weisser-dev/opencode-best-practices"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
