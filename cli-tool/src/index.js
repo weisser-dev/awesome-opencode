@@ -2,19 +2,34 @@
 
 import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, promptCostControl, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
 
+const args = process.argv.slice(2);
+const command = args[0] || '';
+const subcommand = args[1] || '';
+
 async function main() {
   try {
+    // ── Handle --help / -h ────────────────────────────────────────────────
+    if (command === '--help' || command === '-h') {
+      showHelp();
+      return;
+    }
+
+    // ── Handle subcommands ────────────────────────────────────────────────
+    if (command === 'configure') {
+      intro();
+      await handleConfigure(subcommand);
+      return;
+    }
+
+    // ── Default: full setup or re-run ─────────────────────────────────────
     intro();
 
-    // Check if setup already ran before
     const existing = checkExistingSetup();
     if (existing) {
-      // Already configured -- offer reconfigure or just start
       await handleExistingSetup(existing);
       return;
     }
 
-    // Fresh setup
     await runFullSetup();
   } catch (error) {
     if (error.name === 'ExitPromptError') {
@@ -24,6 +39,28 @@ async function main() {
     console.error('\nError:', error.message);
     process.exit(1);
   }
+}
+
+function showHelp() {
+  console.log(`
+  awesome-opencode - Setup OpenCode with best practices
+
+  Usage:
+    awesome-opencode                    Interactive setup (or re-run menu)
+    awesome-opencode configure          Reconfigure everything
+    awesome-opencode configure agents   Add/remove agents
+    awesome-opencode configure skills   Add/remove skills
+    awesome-opencode configure models   Change model strategy
+    awesome-opencode configure mcp      Add/remove MCP servers
+    awesome-opencode --help             Show this help
+
+  Examples:
+    npx @weisser-dev/awesome-opencode
+    awesome-opencode configure mcp
+    awesome-opencode --help
+
+  Docs: https://github.com/weisser-dev/awesome-opencode
+`);
 }
 
 async function handleExistingSetup(existing) {
@@ -46,21 +83,81 @@ async function handleExistingSetup(existing) {
   }
   console.log('');
 
+  const choices = [
+    { name: 'Start OpenCode', value: 'start' },
+    { name: 'Start OpenCode (Sandboxed)', value: 'sandbox' },
+    { name: 'Reconfigure (run setup again)', value: 'reconfigure' },
+    { name: 'Configure agents', value: 'configure-agents' },
+    { name: 'Configure skills', value: 'configure-skills' },
+    { name: 'Configure models', value: 'configure-models' },
+    { name: 'Configure MCP servers', value: 'configure-mcp' },
+    { name: 'Exit', value: 'exit' },
+  ];
+
   const action = await select({
     message: 'What would you like to do?',
-    choices: [
-      { name: 'Start OpenCode', value: 'start' },
-      { name: 'Reconfigure (run setup again)', value: 'reconfigure' },
-      { name: 'Exit', value: 'exit' },
-    ],
+    choices,
   });
 
-  if (action === 'start') {
-    await launchOpenCode();
-  } else if (action === 'reconfigure') {
-    await runFullSetup();
+  switch (action) {
+    case 'start':
+      await launchOpenCode({ forceSandbox: false });
+      break;
+    case 'sandbox':
+      await launchOpenCode({ forceSandbox: true });
+      break;
+    case 'reconfigure':
+      await runFullSetup();
+      break;
+    case 'configure-agents':
+      await handleConfigure('agents');
+      break;
+    case 'configure-skills':
+      await handleConfigure('skills');
+      break;
+    case 'configure-models':
+      await handleConfigure('models');
+      break;
+    case 'configure-mcp':
+      await handleConfigure('mcp');
+      break;
+    // exit: just return
   }
-  // exit: just return
+}
+
+async function handleConfigure(what) {
+  const project = await detectProject();
+
+  switch (what) {
+    case 'agents': {
+      const agents = await promptAgents(project);
+      const costControl = await promptCostControl(agents);
+      await generateFiles({ project, agents, skills: [], modelConfig: null, mcpConfig: [], mcpSearchResults: [], costControl });
+      break;
+    }
+    case 'skills': {
+      const skills = await promptSkills(project);
+      await generateFiles({ project, agents: [], skills, modelConfig: null, mcpConfig: [], mcpSearchResults: [], costControl: {} });
+      break;
+    }
+    case 'models': {
+      const modelConfig = await promptModels(project);
+      await generateFiles({ project, agents: [], skills: [], modelConfig, mcpConfig: [], mcpSearchResults: [], costControl: {} });
+      break;
+    }
+    case 'mcp': {
+      const mcpConfig = await promptMcp(project);
+      const mcpSearchResults = await promptMcpSearch(mcpConfig);
+      await generateFiles({ project, agents: [], skills: [], modelConfig: null, mcpConfig, mcpSearchResults, costControl: {} });
+      break;
+    }
+    default: {
+      // No subcommand: full reconfigure
+      await runFullSetup();
+    }
+  }
+
+  outro();
 }
 
 async function runFullSetup() {
@@ -69,7 +166,7 @@ async function runFullSetup() {
   const skills = await promptSkills(project);
   const modelConfig = await promptModels(project);
 
-  // MCP: curated list + optional registry search
+  // MCP: curated list + optional mcp.so search
   const mcpConfig = await promptMcp(project);
   const mcpSearchResults = await promptMcpSearch(mcpConfig);
 

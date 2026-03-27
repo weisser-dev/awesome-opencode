@@ -1360,59 +1360,48 @@ export async function promptMcp(project) {
   return selected;
 }
 
-// ─── MCP Registry Search ────────────────────────────────────────────────────
+// ─── MCP Search (mcp.so) ────────────────────────────────────────────────────
 
-const MCP_REGISTRY_URL = 'https://registry.modelcontextprotocol.io/v0/servers';
-
-async function searchMcpRegistry(query) {
-  const { default: fetch } = await import('node-fetch').catch(() => {
-    // Fallback to global fetch (Node 18+)
-    return { default: globalThis.fetch };
-  });
-
+async function searchMcpSo(query) {
   try {
-    const res = await fetch(`${MCP_REGISTRY_URL}?q=${encodeURIComponent(query)}&limit=30`, {
-      signal: AbortSignal.timeout(8000),
+    const res = await fetch(`https://mcp.so/api/servers?q=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'awesome-opencode-cli/1.0' },
     });
     if (!res.ok) return [];
-    const data = await res.json();
-    if (!data.servers) return [];
+    const html = await res.text();
 
-    // Deduplicate by name (keep latest version)
+    // Parse server cards from mcp.so HTML
+    // Pattern: href="/server/NAME/AUTHOR">...<h3>TITLE</h3>...<p>DESC</p>
+    const pattern = /href="\/server\/([^"]+)"[^>]*>[\s\S]*?<h3[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/g;
+    const matches = [...html.matchAll(pattern)];
+
     const seen = new Map();
-    for (const entry of data.servers) {
-      const s = entry.server;
-      const meta = entry._meta?.['io.modelcontextprotocol.registry/official'];
-      if (!meta?.isLatest) continue;
-      if (seen.has(s.name)) continue;
+    for (const m of matches) {
+      const slug = m[1]; // e.g. "playwright-mcp/microsoft"
+      const title = m[2].replace(/<[^>]+>/g, '').trim();
+      const desc = m[3].replace(/<[^>]+>/g, '').trim();
 
-      const remote = s.remotes?.[0];
-      const pkg = s.packages?.[0];
+      if (seen.has(slug)) continue;
+      // Skip mirrors
+      if (slug.includes('MCP-Mirror') || desc.startsWith('Mirror of')) continue;
 
-      let config = null;
-      if (remote?.url) {
-        config = { type: 'remote', url: remote.url };
-        if (remote.headers?.length > 0) {
-          config.headers = {};
-          for (const h of remote.headers) {
-            config.headers[h.name] = h.isSecret ? `{env:${h.name.replace(/-/g, '_').toUpperCase()}}` : '';
-          }
-        }
-      } else if (pkg?.identifier) {
-        if (pkg.registryType === 'npm') {
-          config = { type: 'local', command: ['npx', '-y', pkg.identifier] };
-        }
-      }
+      const parts = slug.split('/');
+      const serverName = parts[0] || slug;
+      const author = parts[1] || '';
 
-      if (!config) continue;
+      // Generate a sensible config -- for mcp.so we suggest npx install
+      // since most servers are npm packages
+      const npmGuess = author ? `@${author}/${serverName}` : serverName;
 
-      seen.set(s.name, {
-        name: s.name,
-        title: s.title || s.name.split('/').pop(),
-        description: (s.description || '').slice(0, 100),
-        version: s.version,
-        url: s.websiteUrl || '',
-        config,
+      seen.set(slug, {
+        slug,
+        title,
+        description: desc.slice(0, 120),
+        author,
+        serverName,
+        url: `https://mcp.so/server/${slug}`,
+        config: { type: 'local', command: ['npx', '-y', npmGuess] },
       });
     }
 
@@ -1424,50 +1413,75 @@ async function searchMcpRegistry(query) {
 
 export async function promptMcpSearch(currentMcpSelections) {
   const { input } = await import('@inquirer/prompts');
+  const allResults = [];
 
-  const doSearch = await confirm({
-    message: 'Search the official MCP Registry for more servers?',
-    default: false,
-  });
+  let searching = true;
+  while (searching) {
+    const doSearch = await confirm({
+      message: allResults.length === 0
+        ? 'Search mcp.so for additional MCP servers?'
+        : 'Search for more MCP servers?',
+      default: false,
+    });
 
-  if (!doSearch) return [];
+    if (!doSearch) break;
 
-  const query = await input({
-    message: 'Search MCP Registry (e.g. "database", "aws", "slack"):',
-  });
+    const query = await input({
+      message: 'Search mcp.so (e.g. "playwright", "database", "slack"):',
+    });
 
-  if (!query.trim()) return [];
+    if (!query.trim()) continue;
 
-  const spinner = ora(`Searching MCP Registry for "${query}"...`).start();
-  const results = await searchMcpRegistry(query.trim());
-  spinner.stop();
+    const spinner = ora(`Searching mcp.so for "${query}"...`).start();
+    const results = await searchMcpSo(query.trim());
+    spinner.stop();
 
-  if (results.length === 0) {
-    console.log(chalk.gray(`  No results found for "${query}".`));
-    console.log(chalk.gray(`  Browse manually: https://registry.modelcontextprotocol.io`));
+    if (results.length === 0) {
+      console.log(chalk.gray(`  No results found for "${query}".`));
+      console.log(chalk.gray(`  Browse manually: https://mcp.so`));
+      console.log('');
+      continue;
+    }
+
+    console.log(chalk.gray(`  Found ${results.length} server(s) on mcp.so:`));
     console.log('');
-    return [];
+
+    const choices = results.map(r => ({
+      name: `${r.title} (${r.author}) - ${r.description}`,
+      value: r.slug,
+    }));
+
+    const selected = await checkbox({
+      message: `Select servers to add (${results.length} found, scroll with arrows):`,
+      choices,
+      pageSize: 12,
+    });
+
+    for (const slug of selected) {
+      const server = results.find(r => r.slug === slug);
+      if (server) {
+        // Ask for the correct npm package name since mcp.so doesn't provide it
+        const suggestedPkg = server.config.command[2];
+        const pkgName = await input({
+          message: `npm package for "${server.title}" (check ${server.url}):`,
+          default: suggestedPkg,
+        });
+
+        allResults.push({
+          name: server.title,
+          value: server.serverName,
+          config: { type: 'local', command: ['npx', '-y', pkgName.trim()] },
+        });
+      }
+    }
+
+    if (selected.length > 0) {
+      console.log(chalk.green(`  Added ${selected.length} server(s).`));
+      console.log('');
+    }
   }
 
-  console.log(chalk.gray(`  Found ${results.length} server(s):`));
-  console.log('');
-
-  const choices = results.map(r => ({
-    name: `${r.title} (${r.name}@${r.version}) - ${r.description}`,
-    value: r.name,
-  }));
-
-  const selected = await checkbox({
-    message: `Select servers to add (${results.length} found, scroll with arrows):`,
-    choices,
-    pageSize: 12,
-  });
-
-  // Return full config objects for selected servers
-  return selected.map(name => {
-    const server = results.find(r => r.name === name);
-    return { name: server.title || name, value: name, config: server.config };
-  });
+  return allResults;
 }
 
 // ─── Cost & Context Control ─────────────────────────────────────────────────
@@ -2186,7 +2200,7 @@ const PROVIDER_ENV_CONFIGS = [
   },
 ];
 
-export async function launchOpenCode() {
+export async function launchOpenCode({ forceSandbox } = {}) {
   const { input } = await import('@inquirer/prompts');
 
   // ── Step 1: Sandbox question ──────────────────────────────────────────────
@@ -2199,9 +2213,9 @@ export async function launchOpenCode() {
     // Docker not installed
   }
 
-  let useSandbox = false;
+  let useSandbox = forceSandbox === true;
 
-  if (dockerAvailable) {
+  if (!useSandbox && forceSandbox !== false && dockerAvailable) {
     useSandbox = await confirm({
       message: 'Run OpenCode in a sandbox? (Docker container, only this project is accessible — recommended for enterprise)',
       default: false,
