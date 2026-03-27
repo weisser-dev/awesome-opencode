@@ -8,7 +8,7 @@ This is a Node.js/TypeScript project providing an open-source collection of agen
 - `templates/agents/` -- 108 agent markdown definitions organized by category
 - `templates/skills/` -- 15 skill definitions (each in `<name>/SKILL.md`)
 - `templates/configs/` -- 5 opencode.json preset configurations
-- `cli-tool/` -- The `@weisser-dev/opencode-advanced` npm package
+- `cli-tool/` -- The `@weisser-dev/awesome-opencode` npm package
   - `cli-tool/src/index.js` -- Entry point, flow control, re-run detection
   - `cli-tool/src/setup.js` -- Core logic: detection, prompts, model intelligence, file generation (~1800 lines)
   - `cli-tool/templates/` -- Bundled copy of templates for npm distribution
@@ -54,7 +54,7 @@ Key data structures:
 
 There are currently no automated tests. To verify changes:
 1. `node --check cli-tool/src/setup.js` -- Syntax validation
-2. `npm link` in cli-tool/ then run `opencode-advanced` in a test project
+2. `npm link` in cli-tool/ then run `awesome-opencode` in a test project
 3. Verify all exports match: `grep "^export " cli-tool/src/setup.js`
 4. Count agents: `grep "category:" cli-tool/src/setup.js | grep "value:" | wc -l` (should be 108)
 5. Count skills: `awk '/^const AVAILABLE_SKILLS/,/^];/' cli-tool/src/setup.js | grep "value:" | wc -l` (should be 15)

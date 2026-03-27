@@ -114,7 +114,7 @@ Subagents uebernehmen standardmaessig das Modell des aufrufenden Primary Agents.
 }
 ```
 
-**Tipp:** Das CLI-Tool `opencode-advanced` setzt diese Step-Limits automatisch wenn die Option "Apply recommended step limits" gewaehlt wird.
+**Tipp:** Das CLI-Tool `awesome-opencode` setzt diese Step-Limits automatisch wenn die Option "Apply recommended step limits" gewaehlt wird.
 
 ### 4. Compaction konfigurieren
 

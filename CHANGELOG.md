@@ -79,8 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- CLI renamed from `opencode-advanced-setup` to `opencode-advanced`
-- npm package renamed to `@weisser-dev/opencode-advanced`
+- CLI renamed from `awesome-opencode-setup` to `awesome-opencode`
+- npm package renamed to `@weisser-dev/awesome-opencode`
 - `project.languages` is now an array (multi-language support)
 - Agent categories reorganized with visual separator lines in the checkbox prompt
 
@@ -93,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 6 agent templates: code-reviewer, docs-writer, security-auditor, debugger, refactorer, test-writer
 - 5 skill templates: git-release, pr-review, migration, test-patterns, deploy
 - 5 config presets: cost-optimized, node-typescript, java-spring, python, security-focused
-- CLI tool `opencode-advanced-setup` with:
+- CLI tool `awesome-opencode-setup` with:
   - Project detection (Node, Java, Python, Go, Rust)
   - Framework detection (Next.js, Spring Boot, Django, FastAPI, etc.)
   - Interactive agent/skill/model/MCP selection
@@ -103,7 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README with documentation, templates, and quickstart
 - MIT license
 
-[Unreleased]: https://github.com/weisser-dev/opencode-best-practices/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/weisser-dev/opencode-best-practices/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/weisser-dev/opencode-best-practices/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/weisser-dev/opencode-best-practices/releases/tag/v0.1.0
+[Unreleased]: https://github.com/weisser-dev/awesome-opencode/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/weisser-dev/awesome-opencode/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/weisser-dev/awesome-opencode/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/weisser-dev/awesome-opencode/releases/tag/v0.1.0

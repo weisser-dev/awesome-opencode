@@ -1,10 +1,10 @@
 {
-  "name": "@weisser-dev/opencode-advanced",
+  "name": "@weisser-dev/awesome-opencode",
   "version": "0.1.0",
   "description": "Interactive CLI to set up OpenCode best practices: agents, skills, model optimization, and configs",
   "type": "module",
   "bin": {
-    "opencode-advanced": "./src/index.js"
+    "awesome-opencode": "./src/index.js"
   },
   "files": [
     "src/",
@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/weisser-dev/opencode-best-practices",
+    "url": "https://github.com/weisser-dev/awesome-opencode",
     "directory": "cli-tool"
   },
-  "homepage": "https://github.com/weisser-dev/opencode-best-practices#readme",
+  "homepage": "https://github.com/weisser-dev/awesome-opencode#readme",
   "bugs": {
-    "url": "https://github.com/weisser-dev/opencode-best-practices/issues"
+    "url": "https://github.com/weisser-dev/awesome-opencode/issues"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.0.0",

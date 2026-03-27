@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: cli-tool
+
+      - name: Syntax check
+        run: |
+          node --check src/index.js
+          node --check src/setup.js
+        working-directory: cli-tool
+
+      - name: Verify agent count
+        run: |
+          COUNT=$(grep "category:" src/setup.js | grep "value:" | wc -l)
+          echo "Agent count: $COUNT"
+          if [ "$COUNT" -lt 108 ]; then
+            echo "❌ Expected at least 108 agents, found $COUNT"
+            exit 1
+          fi
+          echo "✅ Agent count OK"
+        working-directory: cli-tool
+
+      - name: Verify skill count
+        run: |
+          COUNT=$(awk '/^const AVAILABLE_SKILLS/,/^];/' src/setup.js | grep "value:" | wc -l)
+          echo "Skill count: $COUNT"
+          if [ "$COUNT" -lt 15 ]; then
+            echo "❌ Expected at least 15 skills, found $COUNT"
+            exit 1
+          fi
+          echo "✅ Skill count OK"
+        working-directory: cli-tool
+
+      - name: Verify templates synced
+        run: |
+          REPO_AGENTS=$(ls ../templates/agents/*.md | wc -l)
+          CLI_AGENTS=$(ls templates/agents/*.md | wc -l)
+          echo "Repo agents: $REPO_AGENTS, CLI agents: $CLI_AGENTS"
+          if [ "$REPO_AGENTS" -ne "$CLI_AGENTS" ]; then
+            echo "❌ Templates out of sync! Run: node scripts/sync-templates.js"
+            exit 1
+          fi
+          echo "✅ Templates in sync"
+        working-directory: cli-tool
+
+      - name: Verify exports
+        run: |
+          EXPORTS=$(grep "^export " src/setup.js | wc -l)
+          echo "Exported functions: $EXPORTS"
+          if [ "$EXPORTS" -lt 10 ]; then
+            echo "❌ Expected at least 10 exports, found $EXPORTS"
+            exit 1
+          fi
+          echo "✅ Exports OK"
+        working-directory: cli-tool
+
+      - name: Dry-run pack
+        run: npm pack --dry-run
+        working-directory: cli-tool

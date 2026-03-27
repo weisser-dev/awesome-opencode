@@ -11,7 +11,7 @@ The most comprehensive collection of agents, skills, and tooling for [OpenCode](
 ## Quickstart
 
 ```bash
-npx @weisser-dev/opencode-advanced
+npx @weisser-dev/awesome-opencode
 ```
 
 One command. It analyzes your project, walks you through agent/skill/model/MCP setup interactively, generates everything, and launches OpenCode.
@@ -23,7 +23,7 @@ One command. It analyzes your project, walks you through agent/skill/model/MCP s
 ```
   OpenCode Advanced Setup
   Best practices for agents, skills, models & more
-  https://github.com/weisser-dev/opencode-best-practices
+  https://github.com/weisser-dev/awesome-opencode
 
 ? How would you like to set up your project?
 ❯ Auto-detect languages (recommended for existing projects)
@@ -383,14 +383,14 @@ Plus: **live search** of the official MCP Registry (`registry.modelcontextprotoc
 ### Via npx (recommended)
 
 ```bash
-npx @weisser-dev/opencode-advanced
+npx @weisser-dev/awesome-opencode
 ```
 
 ### Global install
 
 ```bash
-npm install -g @weisser-dev/opencode-advanced
-opencode-advanced
+npm install -g @weisser-dev/awesome-opencode
+awesome-opencode
 ```
 
 ### Manual setup (without CLI)
@@ -417,17 +417,17 @@ opencode    # then /init in the TUI
 ## Development
 
 ```bash
-git clone https://github.com/weisser-dev/opencode-best-practices
-cd opencode-best-practices/cli-tool
+git clone https://github.com/weisser-dev/awesome-opencode
+cd awesome-opencode/cli-tool
 npm install
 npm link
 
 # Test in any project:
 cd ~/my-project
-opencode-advanced
+awesome-opencode
 
 # Unlink when done:
-npm unlink -g @weisser-dev/opencode-advanced
+npm unlink -g @weisser-dev/awesome-opencode
 ```
 
 ### Publishing to npm
@@ -444,7 +444,7 @@ npm publish              # publish (requires npm login + org access)
 ## Project Structure
 
 ```
-opencode-best-practices/
+awesome-opencode/
   README.md                    # This file
   CHANGELOG.md                 # Release history
   AGENTS.md                    # Project rules for OpenCode
@@ -454,7 +454,7 @@ opencode-best-practices/
     agents/                    # 108 agent definitions (.md)
     skills/                    # 15 skill definitions (SKILL.md)
     configs/                   # 5 opencode.json presets
-  cli-tool/                    # @weisser-dev/opencode-advanced
+  cli-tool/                    # @weisser-dev/awesome-opencode
     src/
       index.js                 # Entry point and flow control
       setup.js                 # Detection, prompts, generation (~1800 lines)

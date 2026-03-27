@@ -1,0 +1,95 @@
+name: Release & Publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 0.3.0, 0.4.0, 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: ${{ inputs.version }}"
+            echo "Expected: X.Y.Z (e.g. 0.3.0)"
+            exit 1
+          fi
+
+      - name: Sync templates
+        run: node scripts/sync-templates.js
+        working-directory: cli-tool
+
+      - name: Set version in package.json
+        run: npm version ${{ inputs.version }} --no-git-tag-version
+        working-directory: cli-tool
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: cli-tool
+
+      - name: Syntax check
+        run: |
+          node --check src/index.js
+          node --check src/setup.js
+        working-directory: cli-tool
+
+      - name: Verify agent count
+        run: |
+          COUNT=$(grep "category:" src/setup.js | grep "value:" | wc -l)
+          if [ "$COUNT" -lt 108 ]; then
+            echo "❌ Expected at least 108 agents, found $COUNT"
+            exit 1
+          fi
+          echo "✅ Agent count: $COUNT"
+        working-directory: cli-tool
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+        working-directory: cli-tool
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create git tag and release commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cli-tool/package.json cli-tool/package-lock.json cli-tool/templates/
+          git commit -m "release: v${{ inputs.version }}" || true
+          git tag -a "v${{ inputs.version }}" -m "v${{ inputs.version }}"
+          git push origin main
+          git push origin "v${{ inputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          body: |
+            ## @weisser-dev/awesome-opencode v${{ inputs.version }}
+
+            Published to npm: [`@weisser-dev/awesome-opencode@${{ inputs.version }}`](https://www.npmjs.com/package/@weisser-dev/awesome-opencode/v/${{ inputs.version }})
+
+            ```bash
+            npx @weisser-dev/awesome-opencode
+            ```
+
+            See [CHANGELOG.md](https://github.com/weisser-dev/awesome-opencode/blob/main/CHANGELOG.md) for details.
+          generate_release_notes: true

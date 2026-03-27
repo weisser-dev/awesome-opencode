@@ -16,7 +16,7 @@ export function intro() {
   console.log('');
   console.log(chalk.bold.cyan('  OpenCode Advanced Setup'));
   console.log(chalk.gray('  Best practices for agents, skills, models & more'));
-  console.log(chalk.gray('  https://github.com/weisser-dev/opencode-best-practices'));
+  console.log(chalk.gray('  https://github.com/weisser-dev/awesome-opencode'));
   console.log('');
 }
 
