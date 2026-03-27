@@ -83,9 +83,20 @@ async function handleExistingSetup(existing) {
   }
   console.log('');
 
+  // Check if Docker is available for sandboxed option
+  let dockerAvailable = false;
+  try {
+    const { execSync } = await import('child_process');
+    execSync('docker --version', { stdio: 'ignore' });
+    dockerAvailable = true;
+  } catch { /* Docker not installed */ }
+
   const choices = [
     { name: 'Start OpenCode', value: 'start' },
-    { name: 'Start OpenCode (Sandboxed)', value: 'sandbox' },
+    ...(dockerAvailable
+      ? [{ name: 'Start OpenCode (Sandboxed via Docker)', value: 'sandbox' }]
+      : [{ name: 'Start OpenCode (Sandboxed — Docker not found)', value: 'sandbox', disabled: '(Docker required)' }]
+    ),
     { name: 'Reconfigure (run setup again)', value: 'reconfigure' },
     { name: 'Configure agents', value: 'configure-agents' },
     { name: 'Configure skills', value: 'configure-skills' },

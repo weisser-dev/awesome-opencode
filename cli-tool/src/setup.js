@@ -2275,24 +2275,30 @@ export async function launchOpenCode({ forceSandbox } = {}) {
     }
   }
 
-  // ── Step 3: Launch prompt ─────────────────────────────────────────────────
+  // ── Step 3: Launch ─────────────────────────────────────────────────────────
+  // If forceSandbox was explicitly set (from re-run menu), skip confirmation
+  // Only ask "Start OpenCode?" when coming from the full setup flow (forceSandbox === undefined)
 
-  const modeLabel = useSandbox ? 'Start OpenCode (Sandboxed)' : 'Start OpenCode';
-  const launch = await confirm({
-    message: `${modeLabel}?`,
-    default: true,
-  });
+  if (forceSandbox === undefined) {
+    const modeLabel = useSandbox ? 'Start OpenCode (Sandboxed)' : 'Start OpenCode';
+    const launch = await confirm({
+      message: `${modeLabel}?`,
+      default: true,
+    });
 
-  if (!launch) {
-    console.log('');
-    if (useSandbox) {
-      console.log(chalk.gray('  To start sandboxed later, use the Docker command shown below.'));
-    } else {
-      console.log(chalk.gray('  To start later, run:'));
-      console.log(chalk.white('    opencode'));
+    if (!launch) {
+      console.log('');
+      if (useSandbox) {
+        console.log(chalk.gray('  To start sandboxed later, run:'));
+        console.log(chalk.white('    awesome-opencode'));
+        console.log(chalk.gray('  and choose "Start OpenCode (Sandboxed)"'));
+      } else {
+        console.log(chalk.gray('  To start later, run:'));
+        console.log(chalk.white('    opencode'));
+      }
+      console.log('');
+      return;
     }
-    console.log('');
-    return;
   }
 
   // ── Step 4a: Sandboxed launch ─────────────────────────────────────────────
