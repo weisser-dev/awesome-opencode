@@ -20,9 +20,9 @@ One command. It analyzes your project, walks you through agent/skill/model/MCP s
 
 ## What it Does
 
-```
-  OpenCode Advanced Setup
-  Best practices for agents, skills, models & more
+```shell
+  Awesome OpenCode
+  108 agents, 15 skills, smart model config
   https://github.com/weisser-dev/awesome-opencode
 
 ? How would you like to set up your project?
@@ -35,31 +35,38 @@ One command. It analyzes your project, walks you through agent/skill/model/MCP s
     - TypeScript
     - Python
 
-? Select project languages: (space to toggle)
-  ◉ JavaScript / TypeScript  (auto-detected)
-  ◉ Python                   (auto-detected)
-  ◯ Java
-  ◯ Go
-  ...
-
-✔ Select agents to install:
-  ── Core Development ──
-    ◉ code-reviewer
-    ◉ test-writer
-    ◯ backend-developer
+? Select project languages (2 detected / 28 total, scroll with arrows):
+  ── Auto-Detected (2) ──
+    ◉ JavaScript / TypeScript
+    ◉ Python
+  ── Other (26) ──
+    ◯ Java
+    ◯ Go
+    ◯ Rust
     ...
-  ── Language Specialists ──
-    ◯ typescript-pro
-    ◯ python-pro
+
+? Select agents (12 recommended / 108 total, scroll with arrows):
+  ── Recommended for your project (12/108) ──
+    ◉ code-reviewer - Code quality review (default)
+    ◉ test-writer - Test generation (default)
+    ◉ devops-engineer - CI/CD pipelines (default)
+    ◉ typescript-pro - TypeScript specialist (JavaScript / TypeScript)
+    ◉ python-pro - Python ecosystem master (Python)
+    ◉ fastapi-developer - FastAPI async APIs (Python)
+    ...
+  ── Core Development (3) ──
+    ◯ backend-developer
     ...
   (108 agents across 10 categories)
 
-✔ Select skills to install:
-    ◉ git-release
-    ◉ ci-pipeline
-    ◉ dependency-audit
+? Select skills (5 recommended / 15 total, scroll with arrows):
+    ◉ git-release - Release notes and version bumps
+    ◉ ci-pipeline - CI pipeline configuration
+    ◉ dependency-audit - Audit dependencies for vulnerabilities
+    ◉ test-patterns - Test generation following project conventions
+    ◉ changelog-generate - Changelog generation from commit history
+    ◯ pr-review
     ...
-  (15 skills)
 
   Models found in your config:
 
@@ -78,20 +85,25 @@ One command. It analyzes your project, walks you through agent/skill/model/MCP s
   Mixed
   Keep existing
 
-✔ Select MCP servers (filtered by your languages):
+? Select MCP servers (14 available for your languages, scroll with arrows):
   ── Universal ──
     ◉ context7 - Library documentation search
+    ◉ git - Read, search, and manipulate Git repos
     ◯ memory - Persistent knowledge graph (official)
     ...
   ── Database ──
-    ◯ postgres - PostgreSQL (official)
+    ◯ postgres - PostgreSQL read-only access (official)
     ...
 
-? Search the official MCP Registry for more servers? Yes
-? Search MCP Registry: terraform
-  Found 4 server(s):
-    ◯ Terraform Cloud MCP (hashicorp/terraform-mcp@1.0.0)
+? Search mcp.so for additional MCP servers? Yes
+? Search mcp.so: playwright
+  Found 45 server(s) on mcp.so:
+? Select servers to add (45 found, scroll with arrows):
+    ◯ Playwright Mcp (microsoft)
     ...
+
+? Apply recommended step limits per agent? (controls context/cost) Yes
+  Code-writing agents: unlimited | Review agents: 10-15 | Fast agents: 5-10
 
 ✔ No AGENTS.md found. Generate one with project-specific rules? Yes
 
@@ -104,22 +116,34 @@ One command. It analyzes your project, walks you through agent/skill/model/MCP s
 
   Setup complete!
 
-? Start OpenCode now? Yes
+? Run OpenCode in a sandbox? (Docker, recommended for enterprise) No
+? Start OpenCode? Yes
+
+  Starting OpenCode...
 ```
 
 On **re-run**, it remembers your setup:
 
-```
+```shell
+  Awesome OpenCode
+  108 agents, 15 skills, smart model config
+  https://github.com/weisser-dev/awesome-opencode
+
   Already configured!
   Last setup: 2026-03-27
   Languages:  node, python
-  Agents:     code-reviewer, test-writer, python-pro
+  Agents:     code-reviewer, test-writer, typescript-pro, python-pro
   Skills:     git-release, ci-pipeline, dependency-audit
   Models:     auto
 
 ? What would you like to do?
 ❯ Start OpenCode
+  Start OpenCode (Sandboxed via Docker)
   Reconfigure (run setup again)
+  Configure agents
+  Configure skills
+  Configure models
+  Configure MCP servers
   Exit
 ```
 
@@ -331,7 +355,7 @@ On **re-run**, it remembers your setup:
 
 The CLI recognizes models from **any provider** -- including custom Bedrock, Azure, or self-hosted endpoints:
 
-```
+```shell
 abcd/eu.anthropic.claude-opus-4-6-v1     -> claude-opus-4   | Frontier | $$$$  | Coding: 95/100
 abcd/eu.anthropic.claude-sonnet-4-6      -> claude-sonnet-4 | Strong   | $$$   | Coding: 90/100
 abcd/eu.anthropic.claude-haiku-4-5       -> claude-haiku-4  | Fast     | $$    | Coding: 75/100
@@ -409,7 +433,7 @@ awesome-opencode --help               # Show help
 
 Run OpenCode in an isolated Docker container where only the current project is accessible:
 
-```
+```shell
 ? Run OpenCode in a sandbox? (Docker, only this project accessible — recommended for enterprise) Yes
 
 ? Which LLM provider are you using?
