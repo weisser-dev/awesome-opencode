@@ -629,10 +629,21 @@ export async function promptAgents(project) {
 
   // Determine recommended agents based on detected languages
   const recommended = new Set([...DEFAULT_AGENTS]);
+  const recommendedReason = new Map(); // agent -> reason string
+  for (const a of DEFAULT_AGENTS) {
+    recommendedReason.set(a, 'default');
+  }
+
   const langs = project.languages || [];
   for (const lang of langs) {
     const langAgents = LANGUAGE_AGENT_MAP[lang] || [];
-    for (const a of langAgents) recommended.add(a);
+    const langLabel = LANGUAGE_OPTIONS.find(o => o.value === lang)?.label || lang;
+    for (const a of langAgents) {
+      recommended.add(a);
+      if (!recommendedReason.has(a) || recommendedReason.get(a) === 'default') {
+        recommendedReason.set(a, langLabel);
+      }
+    }
   }
 
   // Separate recommended (detected) from others
@@ -648,8 +659,12 @@ export async function promptAgents(project) {
   if (recCount > 0) {
     choices.push({ type: 'separator', separator: chalk.bold.green(`── Recommended for your project (${recCount}/${totalCount}) ──`) });
     for (const agent of recommendedAgents) {
+      const reason = recommendedReason.get(agent.value);
+      const tag = reason && reason !== 'default'
+        ? chalk.gray(` (${reason})`)
+        : chalk.gray(' (default)');
       choices.push({
-        name: `${agent.name} - ${agent.description}`,
+        name: `${agent.name} - ${agent.description}${tag}`,
         value: agent.value,
         checked: true,
       });
