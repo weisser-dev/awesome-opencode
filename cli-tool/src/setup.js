@@ -346,6 +346,9 @@ export async function detectProject() {
     existingConfig: null,
     packageManager: null,
     hasAgentsMd: false,
+    existingAgents: [],
+    existingMcps: [],
+    existingProviders: [],
   };
 
   // Detect existing opencode.json
@@ -354,6 +357,19 @@ export async function detectProject() {
     project.hasOpenCodeConfig = true;
     try {
       project.existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+      // Extract existing agents from config
+      if (project.existingConfig.agent) {
+        project.existingAgents = Object.keys(project.existingConfig.agent);
+      }
+      // Extract existing MCP servers from config
+      if (project.existingConfig.mcp) {
+        project.existingMcps = Object.keys(project.existingConfig.mcp);
+      }
+      // Extract custom providers
+      if (project.existingConfig.provider) {
+        project.existingProviders = Object.keys(project.existingConfig.provider);
+      }
     } catch { /* ignore parse errors */ }
   }
 
@@ -451,6 +467,15 @@ export async function detectProject() {
     console.log(chalk.gray(`  Package manager: ${project.packageManager}`));
   }
   console.log(chalk.gray(`  Existing config: ${project.hasOpenCodeConfig ? 'yes' : 'no'}`));
+  if (project.existingProviders.length > 0) {
+    console.log(chalk.gray(`  Custom providers: ${project.existingProviders.join(', ')}`));
+  }
+  if (project.existingAgents.length > 0) {
+    console.log(chalk.gray(`  Existing agents:  ${project.existingAgents.join(', ')}`));
+  }
+  if (project.existingMcps.length > 0) {
+    console.log(chalk.gray(`  Existing MCPs:    ${project.existingMcps.join(', ')}`));
+  }
   console.log('');
 
   return project;
@@ -783,7 +808,10 @@ const MODEL_FINGERPRINTS = [
   { pattern: /claude.*opus.*3/i,      canonical: 'claude-opus-3',     family: 'anthropic', tier: 'strong',   coding: 80, cost: 'high' },
   { pattern: /claude.*sonnet.*3/i,    canonical: 'claude-sonnet-3',   family: 'anthropic', tier: 'strong',   coding: 78, cost: 'medium' },
   { pattern: /claude.*haiku.*3/i,     canonical: 'claude-haiku-3',    family: 'anthropic', tier: 'fast',     coding: 60, cost: 'low' },
-  // OpenAI
+  // OpenAI -- order matters: most specific patterns first
+  { pattern: /gpt.*5\.?3.*codex/i,   canonical: 'gpt-5.3-codex',     family: 'openai',    tier: 'frontier', coding: 96, cost: 'very-high' },
+  { pattern: /gpt.*5\.?3.*chat/i,    canonical: 'gpt-5.3-chat',      family: 'openai',    tier: 'frontier', coding: 94, cost: 'high' },
+  { pattern: /gpt.*5\.?3/i,          canonical: 'gpt-5.3',           family: 'openai',    tier: 'frontier', coding: 94, cost: 'high' },
   { pattern: /gpt.*5\.?2/i,          canonical: 'gpt-5.2',           family: 'openai',    tier: 'frontier', coding: 93, cost: 'high' },
   { pattern: /gpt.*5\.?1.*codex/i,   canonical: 'gpt-5.1-codex',     family: 'openai',    tier: 'strong',   coding: 88, cost: 'medium' },
   { pattern: /gpt.*5\.?1/i,          canonical: 'gpt-5.1',           family: 'openai',    tier: 'strong',   coding: 85, cost: 'medium' },
