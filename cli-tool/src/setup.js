@@ -569,6 +569,29 @@ const DEFAULT_AGENTS = new Set([
   'git-workflow-manager',
 ]);
 
+// Map languages to recommended agents
+const LANGUAGE_AGENT_MAP = {
+  'node':       ['typescript-pro', 'javascript-pro', 'react-specialist', 'nextjs-developer', 'vue-expert', 'angular-architect'],
+  'python':     ['python-pro', 'django-developer', 'fastapi-developer'],
+  'java':       ['java-architect', 'spring-boot-engineer', 'kotlin-specialist'],
+  'kotlin':     ['kotlin-specialist', 'java-architect'],
+  'go':         ['golang-pro'],
+  'rust':       ['rust-engineer'],
+  'ruby':       ['ruby-pro'],
+  'php':        ['php-pro', 'laravel-specialist'],
+  'csharp':     ['csharp-developer'],
+  'swift':      ['swift-expert', 'mobile-app-developer'],
+  'dart':       ['flutter-expert', 'mobile-app-developer'],
+  'cpp':        ['cpp-pro'],
+  'terraform':  ['terraform-engineer', 'cloud-architect'],
+  'kubernetes': ['kubernetes-specialist', 'docker-expert'],
+  'docker':     ['docker-expert', 'devops-engineer'],
+  'solidity':   ['blockchain-developer'],
+  'elixir':     ['elixir-expert'],
+  'scala':      ['java-architect'],
+  'sql':        ['sql-pro', 'postgres-pro', 'database-optimizer'],
+};
+
 export async function promptAgents(project) {
   const install = await confirm({
     message: 'Install custom agents (subagents)?',
@@ -577,24 +600,52 @@ export async function promptAgents(project) {
 
   if (!install) return [];
 
-  // Build choices grouped by category with separators
-  const categories = ['Core Development', 'Language Specialists', 'Infrastructure', 'Quality & Security', 'Data & AI', 'Developer Experience', 'Specialized Domains', 'Business & Product', 'Meta & Orchestration', 'Research & Analysis'];
+  // Determine recommended agents based on detected languages
+  const recommended = new Set([...DEFAULT_AGENTS]);
+  const langs = project.languages || [];
+  for (const lang of langs) {
+    const langAgents = LANGUAGE_AGENT_MAP[lang] || [];
+    for (const a of langAgents) recommended.add(a);
+  }
+
+  // Separate recommended (detected) from others
+  const recommendedAgents = AVAILABLE_AGENTS.filter(a => recommended.has(a.value));
+  const otherAgents = AVAILABLE_AGENTS.filter(a => !recommended.has(a.value));
+
+  const totalCount = AVAILABLE_AGENTS.length;
+  const recCount = recommendedAgents.length;
+
+  // Build choices: recommended first, then all others by category
   const choices = [];
 
+  if (recCount > 0) {
+    choices.push({ type: 'separator', separator: chalk.bold.green(`── Recommended for your project (${recCount}/${totalCount}) ──`) });
+    for (const agent of recommendedAgents) {
+      choices.push({
+        name: `${agent.name} - ${agent.description}`,
+        value: agent.value,
+        checked: true,
+      });
+    }
+  }
+
+  // Group remaining agents by category
+  const categories = [...new Set(otherAgents.map(a => a.category))];
   for (const category of categories) {
-    choices.push({ type: 'separator', separator: chalk.bold.blue(`── ${category} ──`) });
-    const categoryAgents = AVAILABLE_AGENTS.filter(a => a.category === category);
+    const categoryAgents = otherAgents.filter(a => a.category === category);
+    if (categoryAgents.length === 0) continue;
+    choices.push({ type: 'separator', separator: chalk.bold.blue(`── ${category} (${categoryAgents.length}) ──`) });
     for (const agent of categoryAgents) {
       choices.push({
         name: `${agent.name} - ${agent.description}`,
         value: agent.value,
-        checked: DEFAULT_AGENTS.has(agent.value),
+        checked: false,
       });
     }
   }
 
   const selected = await checkbox({
-    message: 'Select agents to install:',
+    message: `Select agents to install (${recCount} recommended / ${totalCount} available):`,
     choices,
   });
 
@@ -639,8 +690,11 @@ export async function promptSkills(project) {
 
   if (!install) return [];
 
+  const totalCount = AVAILABLE_SKILLS.length;
+  const recCount = DEFAULT_SKILLS.size;
+
   const selected = await checkbox({
-    message: 'Select skills to install:',
+    message: `Select skills to install (${recCount} recommended / ${totalCount} available):`,
     choices: AVAILABLE_SKILLS.map(s => ({
       name: `${s.name} - ${s.description}`,
       value: s.value,
@@ -772,12 +826,37 @@ const AGENT_TIERS = {
   'java-architect': { tier: 'frontier', steps: null },
   'rust-engineer':  { tier: 'frontier', steps: null },
   'golang-pro':     { tier: 'frontier', steps: null },
+  'angular-architect':   { tier: 'frontier', steps: null },
+  'cpp-pro':             { tier: 'frontier', steps: null },
+  'csharp-developer':    { tier: 'frontier', steps: null },
+  'elixir-expert':       { tier: 'frontier', steps: null },
+  'flutter-expert':      { tier: 'frontier', steps: null },
+  'kotlin-specialist':   { tier: 'frontier', steps: null },
+  'php-pro':             { tier: 'frontier', steps: null },
+  'ruby-pro':            { tier: 'frontier', steps: null },
+  'swift-expert':        { tier: 'frontier', steps: null },
   'react-specialist':    { tier: 'strong', steps: null },
   'nextjs-developer':    { tier: 'strong', steps: null },
   'vue-expert':          { tier: 'strong', steps: null },
   'spring-boot-engineer':{ tier: 'strong', steps: null },
   'django-developer':    { tier: 'strong', steps: null },
   'fastapi-developer':   { tier: 'strong', steps: null },
+  'laravel-specialist':  { tier: 'strong', steps: null },
+  'sql-pro':             { tier: 'strong', steps: 15 },
+  // Infrastructure -- read-heavy, moderate limits (some write configs)
+  'azure-infra-engineer':  { tier: 'strong', steps: 15 },
+  'cloud-architect':       { tier: 'strong', steps: 15 },
+  'database-administrator':{ tier: 'strong', steps: 15 },
+  'deployment-engineer':   { tier: 'strong', steps: 15 },
+  'devops-engineer':       { tier: 'strong', steps: null },
+  'docker-expert':         { tier: 'strong', steps: null },
+  'incident-responder':    { tier: 'strong', steps: 15 },
+  'kubernetes-specialist': { tier: 'strong', steps: 15 },
+  'network-engineer':      { tier: 'strong', steps: 12 },
+  'platform-engineer':     { tier: 'strong', steps: 15 },
+  'security-engineer':     { tier: 'strong', steps: 15 },
+  'sre-engineer':          { tier: 'strong', steps: 15 },
+  'terraform-engineer':    { tier: 'strong', steps: null },
   // READ-ONLY / analysis agents -- limited steps
   'code-reviewer':       { tier: 'strong', steps: 15 },
   'architect-reviewer':  { tier: 'strong', steps: 15 },
@@ -789,6 +868,36 @@ const AGENT_TIERS = {
   'penetration-tester':  { tier: 'strong', steps: 15 },
   'accessibility-tester':{ tier: 'strong', steps: 10 },
   'chaos-engineer':      { tier: 'strong', steps: 10 },
+  // Data & AI -- mix of writing and analysis
+  'ai-engineer':               { tier: 'strong', steps: null },
+  'data-analyst':              { tier: 'strong', steps: 12 },
+  'data-engineer':             { tier: 'strong', steps: null },
+  'data-scientist':            { tier: 'strong', steps: 15 },
+  'database-optimizer':        { tier: 'strong', steps: 15 },
+  'llm-architect':             { tier: 'strong', steps: 15 },
+  'machine-learning-engineer': { tier: 'strong', steps: null },
+  'mlops-engineer':            { tier: 'strong', steps: 15 },
+  'nlp-engineer':              { tier: 'strong', steps: null },
+  'postgres-pro':              { tier: 'strong', steps: 15 },
+  'prompt-engineer':           { tier: 'fast',   steps: 10 },
+  // Developer Experience -- mix of writing and advisory
+  'build-engineer':      { tier: 'strong', steps: null },
+  'cli-developer':       { tier: 'strong', steps: null },
+  'dx-optimizer':        { tier: 'fast',   steps: 10 },
+  'legacy-modernizer':   { tier: 'strong', steps: null },
+  'mcp-developer':       { tier: 'strong', steps: null },
+  'tooling-engineer':    { tier: 'strong', steps: null },
+  // Specialized Domains -- code-writing
+  'blockchain-developer':{ tier: 'frontier', steps: null },
+  'embedded-systems':    { tier: 'frontier', steps: null },
+  'fintech-engineer':    { tier: 'strong',   steps: null },
+  'game-developer':      { tier: 'frontier', steps: null },
+  'iot-engineer':        { tier: 'strong',   steps: null },
+  'mobile-app-developer':{ tier: 'strong',   steps: null },
+  'mobile-developer':    { tier: 'strong',   steps: null },
+  'payment-integration': { tier: 'strong',   steps: null },
+  'seo-specialist':      { tier: 'fast',     steps: 10 },
+  'websocket-engineer':  { tier: 'strong',   steps: null },
   // Cheap/fast agents -- tight step limits
   'docs-writer':         { tier: 'fast', steps: 10 },
   'technical-writer':    { tier: 'fast', steps: 10 },
@@ -800,8 +909,11 @@ const AGENT_TIERS = {
   'git-workflow-manager':{ tier: 'fast', steps: 8 },
   // Business/product -- advisory, limited steps
   'business-analyst':    { tier: 'strong', steps: 10 },
+  'content-marketer':    { tier: 'fast',   steps: 10 },
+  'legal-advisor':       { tier: 'strong', steps: 10 },
   'product-manager':     { tier: 'strong', steps: 10 },
   'project-manager':     { tier: 'strong', steps: 8 },
+  'sales-engineer':      { tier: 'strong', steps: 10 },
   'scrum-master':        { tier: 'fast',   steps: 8 },
   'ux-researcher':       { tier: 'strong', steps: 10 },
   // Research -- moderate steps
@@ -809,6 +921,7 @@ const AGENT_TIERS = {
   'trend-analyst':       { tier: 'strong', steps: 10 },
   'market-researcher':   { tier: 'strong', steps: 10 },
   'data-researcher':     { tier: 'strong', steps: 12 },
+  'scientific-literature-researcher': { tier: 'strong', steps: 12 },
   // Orchestration -- limited steps (they delegate, not execute)
   'workflow-orchestrator':     { tier: 'strong', steps: 10 },
   'multi-agent-coordinator':  { tier: 'strong', steps: 10 },
