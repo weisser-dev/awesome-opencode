@@ -2125,44 +2125,267 @@ export function outro() {
 
 // ─── Launch OpenCode ────────────────────────────────────────────────────────
 
+// ─── Known provider environment variables ───────────────────────────────────
+
+const PROVIDER_ENV_CONFIGS = [
+  {
+    name: 'Anthropic (Direct API)',
+    value: 'anthropic',
+    envVars: [
+      { key: 'ANTHROPIC_API_KEY', description: 'Anthropic API key', secret: true, required: true },
+    ],
+  },
+  {
+    name: 'OpenAI (Direct API)',
+    value: 'openai',
+    envVars: [
+      { key: 'OPENAI_API_KEY', description: 'OpenAI API key', secret: true, required: true },
+    ],
+  },
+  {
+    name: 'AWS Bedrock',
+    value: 'bedrock',
+    envVars: [
+      { key: 'AWS_BEARER_TOKEN_BEDROCK', description: 'AWS Bedrock bearer token', secret: true, required: false },
+      { key: 'AWS_ACCESS_KEY_ID', description: 'AWS access key ID', secret: true, required: false },
+      { key: 'AWS_SECRET_ACCESS_KEY', description: 'AWS secret access key', secret: true, required: false },
+      { key: 'AWS_SESSION_TOKEN', description: 'AWS session token (if using temporary credentials)', secret: true, required: false },
+      { key: 'AWS_REGION', description: 'AWS region (e.g. eu-central-1, us-east-1)', secret: false, required: true },
+      { key: 'AWS_PROFILE', description: 'AWS profile name (if using profiles)', secret: false, required: false },
+    ],
+  },
+  {
+    name: 'Azure OpenAI',
+    value: 'azure',
+    envVars: [
+      { key: 'AZURE_OPENAI_API_KEY', description: 'Azure OpenAI API key', secret: true, required: true },
+      { key: 'AZURE_OPENAI_ENDPOINT', description: 'Azure endpoint URL', secret: false, required: true },
+      { key: 'AZURE_OPENAI_API_VERSION', description: 'API version (e.g. 2024-02-15-preview)', secret: false, required: false },
+    ],
+  },
+  {
+    name: 'Google AI / Vertex AI',
+    value: 'google',
+    envVars: [
+      { key: 'GOOGLE_API_KEY', description: 'Google AI API key', secret: true, required: false },
+      { key: 'GOOGLE_PROJECT_ID', description: 'GCP project ID (for Vertex AI)', secret: false, required: false },
+      { key: 'GOOGLE_REGION', description: 'GCP region (for Vertex AI)', secret: false, required: false },
+    ],
+  },
+  {
+    name: 'OpenRouter',
+    value: 'openrouter',
+    envVars: [
+      { key: 'OPENROUTER_API_KEY', description: 'OpenRouter API key', secret: true, required: true },
+    ],
+  },
+  {
+    name: 'Custom / Self-hosted',
+    value: 'custom',
+    envVars: [],
+  },
+];
+
 export async function launchOpenCode() {
-  // Check if opencode is installed
-  let opencodeAvailable = false;
+  const { input } = await import('@inquirer/prompts');
+
+  // ── Step 1: Sandbox question ──────────────────────────────────────────────
+
+  let dockerAvailable = false;
   try {
-    execSync('which opencode', { stdio: 'ignore' });
-    opencodeAvailable = true;
+    execSync('docker --version', { stdio: 'ignore' });
+    dockerAvailable = true;
   } catch {
-    // not installed
+    // Docker not installed
   }
 
-  if (!opencodeAvailable) {
-    console.log(chalk.yellow('  OpenCode is not installed.'));
-    console.log(chalk.gray('  Install it: https://opencode.ai/docs/'));
-    console.log('');
-    console.log(chalk.gray('  After installing, run:'));
-    console.log(chalk.white('    opencode'));
-    console.log('');
-    return;
+  let useSandbox = false;
+
+  if (dockerAvailable) {
+    useSandbox = await confirm({
+      message: 'Run OpenCode in a sandbox? (Docker container, only this project is accessible — recommended for enterprise)',
+      default: false,
+    });
   }
 
+  // ── Step 2: Check OpenCode availability ───────────────────────────────────
+
+  let opencodeAvailable = false;
+  if (!useSandbox) {
+    try {
+      execSync('which opencode', { stdio: 'ignore' });
+      opencodeAvailable = true;
+    } catch {
+      // not installed
+    }
+
+    if (!opencodeAvailable) {
+      console.log(chalk.yellow('  OpenCode is not installed locally.'));
+      console.log(chalk.gray('  Install it: https://opencode.ai/docs/'));
+      if (dockerAvailable) {
+        console.log(chalk.gray('  Or re-run and choose the sandbox option (Docker).'));
+      }
+      console.log('');
+      console.log(chalk.gray('  After installing, run:'));
+      console.log(chalk.white('    opencode'));
+      console.log('');
+      return;
+    }
+  }
+
+  // ── Step 3: Launch prompt ─────────────────────────────────────────────────
+
+  const modeLabel = useSandbox ? 'Start OpenCode (Sandboxed)' : 'Start OpenCode';
   const launch = await confirm({
-    message: 'Start OpenCode now?',
+    message: `${modeLabel}?`,
     default: true,
   });
 
   if (!launch) {
     console.log('');
-    console.log(chalk.gray('  To start later, run:'));
-    console.log(chalk.white('    opencode'));
+    if (useSandbox) {
+      console.log(chalk.gray('  To start sandboxed later, use the Docker command shown below.'));
+    } else {
+      console.log(chalk.gray('  To start later, run:'));
+      console.log(chalk.white('    opencode'));
+    }
     console.log('');
     return;
   }
+
+  // ── Step 4a: Sandboxed launch ─────────────────────────────────────────────
+
+  if (useSandbox) {
+    console.log('');
+
+    // Ask which provider
+    const provider = await select({
+      message: 'Which LLM provider are you using?',
+      choices: PROVIDER_ENV_CONFIGS.map(p => ({ name: p.name, value: p.value })),
+    });
+
+    const providerConfig = PROVIDER_ENV_CONFIGS.find(p => p.value === provider);
+    const envFlags = [];
+    const envSummary = [];
+
+    // Collect env vars for the selected provider
+    if (providerConfig && providerConfig.envVars.length > 0) {
+      console.log('');
+      console.log(chalk.gray(`  Configure ${providerConfig.name} environment variables:`));
+      console.log(chalk.gray('  (Leave empty to skip optional vars, they can also be set in your shell)'));
+      console.log('');
+
+      for (const envVar of providerConfig.envVars) {
+        const label = envVar.required ? `${envVar.key} (required)` : `${envVar.key} (optional)`;
+
+        // Check if already set in current environment
+        const existing = process.env[envVar.key];
+        if (existing) {
+          const masked = envVar.secret ? existing.slice(0, 4) + '...' + existing.slice(-4) : existing;
+          const useExisting = await confirm({
+            message: `${envVar.key} found in environment (${masked}). Use it?`,
+            default: true,
+          });
+          if (useExisting) {
+            envFlags.push(`-e ${envVar.key}`);
+            envSummary.push(`${envVar.key} (from env)`);
+            continue;
+          }
+        }
+
+        const value = await input({
+          message: `${label} - ${envVar.description}:`,
+          default: '',
+        });
+
+        if (value.trim()) {
+          envFlags.push(`-e ${envVar.key}="${value.trim()}"`);
+          envSummary.push(envVar.key);
+        } else if (process.env[envVar.key]) {
+          // Pass through from host env even if not explicitly entered
+          envFlags.push(`-e ${envVar.key}`);
+          envSummary.push(`${envVar.key} (from host)`);
+        }
+      }
+    }
+
+    // Ask for additional custom env vars
+    const addMore = await confirm({
+      message: 'Add additional environment variables?',
+      default: false,
+    });
+
+    if (addMore) {
+      let adding = true;
+      while (adding) {
+        const key = await input({ message: 'Variable name (e.g. MY_API_KEY):' });
+        if (!key.trim()) break;
+        const val = await input({ message: `Value for ${key.trim()}:` });
+        if (val.trim()) {
+          envFlags.push(`-e ${key.trim()}="${val.trim()}"`);
+          envSummary.push(key.trim());
+        }
+        adding = await confirm({ message: 'Add another?', default: false });
+      }
+    }
+
+    // Build Docker command
+    const envString = envFlags.length > 0 ? ' \\\n  ' + envFlags.join(' \\\n  ') : '';
+    const dockerCmd = `docker run -it --rm \\\n  -v "$(pwd)":/workspace \\\n  -w /workspace${envString} \\\n  node:22 \\\n  bash -c "npm i -g opencode-ai && opencode"`;
+
+    console.log('');
+    console.log(chalk.bold('  Docker command:'));
+    console.log('');
+    console.log(chalk.cyan(`  ${dockerCmd.replace(/\n/g, '\n  ')}`));
+    console.log('');
+
+    if (envSummary.length > 0) {
+      console.log(chalk.gray(`  Environment: ${envSummary.join(', ')}`));
+      console.log('');
+    }
+
+    const runNow = await confirm({
+      message: 'Run this Docker command now?',
+      default: true,
+    });
+
+    if (!runNow) {
+      console.log(chalk.gray('  Copy the command above and run it manually.'));
+      console.log('');
+      return;
+    }
+
+    console.log('');
+    console.log(chalk.cyan('  Starting OpenCode (Sandboxed)...'));
+    console.log(chalk.gray('  Pulling node:22 image and installing opencode-ai...'));
+    console.log('');
+
+    // Build the actual command as a single string for shell execution
+    const shellEnv = envFlags.join(' ');
+    const shellCmd = `docker run -it --rm -v "$(pwd)":/workspace -w /workspace ${shellEnv} node:22 bash -c "npm i -g opencode-ai && opencode"`;
+
+    const child = spawn('sh', ['-c', shellCmd], {
+      stdio: 'inherit',
+      cwd: CWD,
+    });
+
+    child.on('error', (err) => {
+      console.error(chalk.red(`  Failed to start Docker: ${err.message}`));
+    });
+
+    await new Promise((resolve) => {
+      child.on('close', resolve);
+    });
+
+    return;
+  }
+
+  // ── Step 4b: Local launch ─────────────────────────────────────────────────
 
   console.log('');
   console.log(chalk.cyan('  Starting OpenCode...'));
   console.log('');
 
-  // Spawn opencode as a child process that replaces this one
   const child = spawn('opencode', [], {
     stdio: 'inherit',
     cwd: CWD,
@@ -2172,7 +2395,6 @@ export async function launchOpenCode() {
     console.error(chalk.red(`  Failed to start OpenCode: ${err.message}`));
   });
 
-  // Wait for opencode to exit before our process exits
   await new Promise((resolve) => {
     child.on('close', resolve);
   });
