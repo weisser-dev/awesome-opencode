@@ -398,13 +398,40 @@ export async function detectProject() {
     console.log('');
   }
 
-  const selectedLanguages = await checkbox({
-    message: 'Select project languages (space to toggle, enter to confirm):',
-    choices: LANGUAGE_OPTIONS.map(o => ({
+  const detectedCount = preChecked.size;
+  const totalCount = LANGUAGE_OPTIONS.length;
+
+  // Build choices: detected languages first, then the rest
+  const choices = [];
+
+  if (detectedCount > 0) {
+    choices.push({ type: 'separator', separator: chalk.bold.green(`── Detected (${detectedCount}) ──`) });
+    for (const lang of autoDetected) {
+      const opt = LANGUAGE_OPTIONS.find(o => o.value === lang);
+      if (opt) {
+        choices.push({
+          name: opt.label,
+          value: opt.value,
+          checked: true,
+        });
+      }
+    }
+    choices.push({ type: 'separator', separator: chalk.bold.blue(`── Other (${totalCount - detectedCount}) ──`) });
+  }
+
+  for (const o of LANGUAGE_OPTIONS) {
+    if (preChecked.has(o.value)) continue; // already added above
+    choices.push({
       name: o.label,
       value: o.value,
-      checked: preChecked.has(o.value),
-    })),
+      checked: false,
+    });
+  }
+
+  const selectedLanguages = await checkbox({
+    message: `Select project languages (${detectedCount} detected / ${totalCount} available, scroll with arrows):`,
+    choices,
+    pageSize: 15,
   });
 
   project.languages = selectedLanguages;
@@ -645,8 +672,9 @@ export async function promptAgents(project) {
   }
 
   const selected = await checkbox({
-    message: `Select agents to install (${recCount} recommended / ${totalCount} available):`,
+    message: `Select agents (${recCount} recommended / ${totalCount} total, scroll with arrows):`,
     choices,
+    pageSize: 18,
   });
 
   return selected;
@@ -694,7 +722,7 @@ export async function promptSkills(project) {
   const recCount = DEFAULT_SKILLS.size;
 
   const selected = await checkbox({
-    message: `Select skills to install (${recCount} recommended / ${totalCount} available):`,
+    message: `Select skills (${recCount} recommended / ${totalCount} total, scroll with arrows):`,
     choices: AVAILABLE_SKILLS.map(s => ({
       name: `${s.name} - ${s.description}`,
       value: s.value,
@@ -1286,9 +1314,12 @@ export async function promptMcp(project) {
     return [];
   }
 
+  const mcpCount = choices.filter(c => c.value).length;
+
   const selected = await checkbox({
-    message: 'Select MCP servers (filtered by your languages):',
+    message: `Select MCP servers (${mcpCount} available for your languages, scroll with arrows):`,
     choices,
+    pageSize: 15,
   });
 
   return selected;
@@ -1392,8 +1423,9 @@ export async function promptMcpSearch(currentMcpSelections) {
   }));
 
   const selected = await checkbox({
-    message: 'Select servers to add:',
+    message: `Select servers to add (${results.length} found, scroll with arrows):`,
     choices,
+    pageSize: 12,
   });
 
   // Return full config objects for selected servers
