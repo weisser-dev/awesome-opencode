@@ -3,8 +3,15 @@
 import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, promptCostControl, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
 
 const args = process.argv.slice(2);
-const command = args[0] || '';
-const subcommand = args[1] || '';
+
+// ── Handle --skipSSL flag (can appear anywhere in args) ───────────────────
+if (args.includes('--skipSSL') || args.includes('--skip-ssl')) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
+const filteredArgs = args.filter(a => a !== '--skipSSL' && a !== '--skip-ssl');
+const command = filteredArgs[0] || '';
+const subcommand = filteredArgs[1] || '';
 
 async function main() {
   try {
@@ -54,10 +61,15 @@ function showHelp() {
     awesome-opencode configure mcp      Add/remove MCP servers
     awesome-opencode --help             Show this help
 
+  Flags:
+    --skipSSL                           Set NODE_TLS_REJECT_UNAUTHORIZED=0
+                                        (useful behind corporate proxies)
+
   Examples:
     npx @weisser-dev/awesome-opencode
     awesome-opencode configure mcp
-    awesome-opencode --help
+    awesome-opencode --skipSSL
+    awesome-opencode --skipSSL configure models
 
   Docs: https://github.com/weisser-dev/awesome-opencode
 `);

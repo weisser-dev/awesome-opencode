@@ -2436,6 +2436,10 @@ export async function launchOpenCode({ forceSandbox } = {}) {
     }
 
     // Build Docker command
+    // If NODE_TLS_REJECT_UNAUTHORIZED=0 is set (via --skipSSL), pass it into the container
+    if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
+      envFlags.push('-e NODE_TLS_REJECT_UNAUTHORIZED=0');
+    }
     const envString = envFlags.length > 0 ? ' \\\n  ' + envFlags.join(' \\\n  ') : '';
     const dockerCmd = `docker run -it --rm \\\n  -v "$PWD":"$PWD" \\\n  -w "$PWD"${envString} \\\n  node:22 \\\n  bash -c "npm i -g opencode-ai && opencode"`;
 
