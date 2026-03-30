@@ -455,11 +455,26 @@ awesome-opencode --crt /certs/ca.pem --skipSSL
 Run OpenCode in an isolated Docker container where only the current project is accessible:
 
 ```shell
-? Run OpenCode in a sandbox? (Docker, only this project accessible — recommended for enterprise) Yes
+? Select dev environment (Docker image):
+  ── Recommended for your project ──
+    ❯ Java 21 + Maven (Spring Boot, enterprise)
+      Java 21 + Gradle
+  ── Other environments ──
+      Node.js 22 (JavaScript, TypeScript)
+      Python 3.13 (pip)
+      ...
+  ── General purpose ──
+      Ubuntu 24.04 (apt available — install anything)
+      Generic Node.js 22 (works for any project)
 
 ? Which LLM provider are you using?
 ❯ AWS Bedrock
-  ...
+
+? Configure corporate proxy? No
+? Configure artifact registry (Nexus, JFrog, PyPI mirror)? Yes
+? Select artifact registries:
+    ◉ Nexus Repository (Maven)
+? MAVEN_MIRROR_URL (required): https://nexus.example.com/repository/maven-public/
 
   Docker command:
   docker run -it --rm \
@@ -467,13 +482,40 @@ Run OpenCode in an isolated Docker container where only the current project is a
     -w "$PWD" \
     -e AWS_BEARER_TOKEN_BEDROCK \
     -e AWS_REGION="eu-central-1" \
-    node:22 \
-    bash -c "npm i -g opencode-ai && opencode"
+    -e MAVEN_MIRROR_URL="https://nexus.example.com/repository/maven-public/" \
+    maven:3-eclipse-temurin-21 \
+    bash -c "mkdir -p ~/.m2 && echo '<settings>...</settings>' > ~/.m2/settings.xml && apt-get install -y nodejs npm && npm i -g opencode-ai && opencode"
 
 ? Run this Docker command now? Yes
 ```
 
-Supports 7 providers: Anthropic, OpenAI, AWS Bedrock, Azure OpenAI, Google AI, OpenRouter, Custom.
+**20 supported dev environments** — all official images:
+
+| Language | Image |
+|----------|-------|
+| Node.js 22 | `node:22` |
+| Bun | `oven/bun:latest` |
+| Python 3.13 | `python:3.13-slim` |
+| Python + uv | `ghcr.io/astral-sh/uv:python3.13-bookworm-slim` |
+| Java + Maven | `maven:3-eclipse-temurin-21` |
+| Java + Gradle | `gradle:8-jdk21` |
+| Kotlin | `openjdk:21-slim-bookworm` |
+| Go 1.24 | `golang:1.24` |
+| Rust | `rust:1-slim-bookworm` |
+| Ruby 3.3 | `ruby:3.3-slim` |
+| PHP 8.4 | `php:8.4-cli` |
+| .NET 9 | `mcr.microsoft.com/dotnet/sdk:9.0` |
+| Swift 6.1 | `swift:6.1` |
+| Dart 3.7 | `dart:3.7` |
+| Elixir 1.18 | `elixir:1.18-slim` |
+| C/C++ | `gcc:14` |
+| Terraform | `hashicorp/terraform:latest` |
+| Ansible | `cytopia/ansible:latest` |
+| Ubuntu 24.04 | `ubuntu:24.04` *(apt — install anything)* |
+| Generic | `node:22` |
+
+Supports 7 LLM providers: Anthropic, OpenAI, AWS Bedrock, Azure OpenAI, Google AI, OpenRouter, Custom.
+Supports corporate proxy + artifact registries: Nexus (npm + Maven), JFrog (npm + Maven), PyPI mirror.
 
 ### Manual setup (without CLI)
 
@@ -507,6 +549,9 @@ npm link
 # Test in any project:
 cd ~/my-project
 awesome-opencode
+
+# Run tests:
+npm test
 
 # Unlink when done:
 npm unlink -g @weisser-dev/awesome-opencode

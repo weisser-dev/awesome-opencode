@@ -7,7 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-03-27
+## [1.4.0] - 2026-03-30
+
+### Added
+
+**20 Docker Dev Environments** (up from 1 generic):
+
+All images are official Docker Hub / vendor images. Smart selection: recommended images shown first based on your detected project languages.
+
+| Language | Image | Package Manager |
+|----------|-------|-----------------|
+| Node.js 22 | `node:22` | npm |
+| Bun | `oven/bun:latest` | bun |
+| Python 3.13 | `python:3.13-slim` | pip |
+| Python + uv | `ghcr.io/astral-sh/uv:python3.13-bookworm-slim` | uv |
+| Java + Maven | `maven:3-eclipse-temurin-21` | maven |
+| Java + Gradle | `gradle:8-jdk21` | gradle |
+| Kotlin | `openjdk:21-slim-bookworm` + sdkman | gradle |
+| Go 1.24 | `golang:1.24` | go |
+| Rust | `rust:1-slim-bookworm` | cargo |
+| Ruby 3.3 | `ruby:3.3-slim` | bundler |
+| PHP 8.4 | `php:8.4-cli` | composer |
+| .NET 9 SDK | `mcr.microsoft.com/dotnet/sdk:9.0` | dotnet |
+| Swift 6.1 | `swift:6.1` | swift |
+| Dart 3.7 | `dart:3.7` | pub |
+| Elixir 1.18 | `elixir:1.18-slim` | mix |
+| C/C++ (GCC 14) | `gcc:14` | make |
+| Terraform | `hashicorp/terraform:latest` | terraform |
+| Ansible | `cytopia/ansible:latest` | ansible |
+| Ubuntu 24.04 | `ubuntu:24.04` | apt (general — install anything) |
+| Generic | `node:22` | npm (fallback) |
+
+**Proxy & Artifact Registry Configuration** (offered during sandbox setup):
+- HTTP/HTTPS corporate proxy
+- Nexus npm registry + Maven mirror
+- JFrog Artifactory npm + Maven
+- PyPI mirror for pip/uv
+- `preInstall` commands auto-generated per registry type
+
+**Unit Tests — 87 tests, 0 failures** (`npm test`):
+- Agents, skills, models, fingerprinting, Docker images, MCP, languages
+
+**Codebase split into modules** (was single 2699-line setup.js):
+- `src/data/` — pure data (agents, skills, models, MCP, docker, languages)
+- `src/lib/` — logic (detect, prompts, generate, docker sandbox)
+- `src/setup.js` — 35-line re-export hub
+
+### Changed
+
+- Sandbox image selection now groups: Recommended → Other → General Purpose
+- `getRecommendedEnvironments()` returns `generals[]` instead of `generic`
+- Proxy + artifact registry config offered after provider setup in sandbox mode
 
 ### Added
 

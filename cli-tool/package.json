@@ -13,6 +13,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+    "test": "node --test src/tests/*.test.js",
     "prepublishOnly": "node scripts/sync-templates.js"
   },
   "keywords": [
