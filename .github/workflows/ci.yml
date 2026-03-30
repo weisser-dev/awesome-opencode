@@ -27,11 +27,16 @@ jobs:
         run: |
           node --check src/index.js
           node --check src/setup.js
+          for f in src/data/*.js src/lib/*.js; do node --check "$f"; done
+        working-directory: cli-tool
+
+      - name: Run tests
+        run: npm test
         working-directory: cli-tool
 
       - name: Verify agent count
         run: |
-          COUNT=$(grep "category:" src/setup.js | grep "value:" | wc -l)
+          COUNT=$(grep "category:" src/data/agents.js | grep "value:" | wc -l)
           echo "Agent count: $COUNT"
           if [ "$COUNT" -lt 108 ]; then
             echo "❌ Expected at least 108 agents, found $COUNT"
@@ -42,7 +47,7 @@ jobs:
 
       - name: Verify skill count
         run: |
-          COUNT=$(awk '/^const AVAILABLE_SKILLS/,/^];/' src/setup.js | grep "value:" | wc -l)
+          COUNT=$(awk '/^export const AVAILABLE_SKILLS/,/^];/' src/data/skills.js | grep "value:" | wc -l)
           echo "Skill count: $COUNT"
           if [ "$COUNT" -lt 15 ]; then
             echo "❌ Expected at least 15 skills, found $COUNT"
@@ -61,17 +66,6 @@ jobs:
             exit 1
           fi
           echo "✅ Templates in sync"
-        working-directory: cli-tool
-
-      - name: Verify exports
-        run: |
-          EXPORTS=$(grep "^export " src/setup.js | wc -l)
-          echo "Exported functions: $EXPORTS"
-          if [ "$EXPORTS" -lt 10 ]; then
-            echo "❌ Expected at least 10 exports, found $EXPORTS"
-            exit 1
-          fi
-          echo "✅ Exports OK"
         working-directory: cli-tool
 
       - name: Dry-run pack

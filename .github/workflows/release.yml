@@ -53,12 +53,26 @@ jobs:
 
       - name: Verify agent count
         run: |
-          COUNT=$(grep "category:" src/setup.js | grep "value:" | wc -l)
+          COUNT=$(grep "category:" src/data/agents.js | grep "value:" | wc -l)
           if [ "$COUNT" -lt 108 ]; then
             echo "❌ Expected at least 108 agents, found $COUNT"
             exit 1
           fi
           echo "✅ Agent count: $COUNT"
+        working-directory: cli-tool
+
+      - name: Verify skill count
+        run: |
+          COUNT=$(awk '/^export const AVAILABLE_SKILLS/,/^];/' src/data/skills.js | grep "value:" | wc -l)
+          if [ "$COUNT" -lt 15 ]; then
+            echo "❌ Expected at least 15 skills, found $COUNT"
+            exit 1
+          fi
+          echo "✅ Skill count: $COUNT"
+        working-directory: cli-tool
+
+      - name: Run tests
+        run: npm test
         working-directory: cli-tool
 
       - name: Publish to npm
