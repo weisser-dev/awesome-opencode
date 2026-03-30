@@ -1,34 +1,69 @@
 #!/usr/bin/env node
 
+import path from 'path';
+import fs from 'fs';
 import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, promptCostControl, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
 
-const args = process.argv.slice(2);
+// ── Parse flags ─────────────────────────────────────────────────────────────
 
-// ── Handle --skipSSL flag (can appear anywhere in args) ───────────────────
-if (args.includes('--skipSSL') || args.includes('--skip-ssl')) {
+const rawArgs = process.argv.slice(2);
+const flags = {};
+const positional = [];
+
+for (let i = 0; i < rawArgs.length; i++) {
+  const arg = rawArgs[i];
+  if (arg === '--skipSSL' || arg === '--skip-ssl') {
+    flags.skipSSL = true;
+  } else if (arg === '--config' && rawArgs[i + 1]) {
+    flags.configPath = path.resolve(rawArgs[++i]);
+  } else if (arg === '--crt' && rawArgs[i + 1]) {
+    flags.crtPath = path.resolve(rawArgs[++i]);
+  } else if (arg === '--help' || arg === '-h') {
+    flags.help = true;
+  } else {
+    positional.push(arg);
+  }
+}
+
+const command = positional[0] || '';
+const subcommand = positional[1] || '';
+
+// ── Apply flags ─────────────────────────────────────────────────────────────
+
+if (flags.skipSSL) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
-const filteredArgs = args.filter(a => a !== '--skipSSL' && a !== '--skip-ssl');
-const command = filteredArgs[0] || '';
-const subcommand = filteredArgs[1] || '';
+if (flags.crtPath) {
+  if (!fs.existsSync(flags.crtPath)) {
+    console.error(`Error: Certificate file not found: ${flags.crtPath}`);
+    process.exit(1);
+  }
+  process.env.NODE_EXTRA_CA_CERTS = flags.crtPath;
+}
+
+if (flags.configPath) {
+  if (!fs.existsSync(flags.configPath)) {
+    console.error(`Error: Config file not found: ${flags.configPath}`);
+    process.exit(1);
+  }
+}
+
+// ── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
   try {
-    // ── Handle --help / -h ────────────────────────────────────────────────
-    if (command === '--help' || command === '-h') {
+    if (flags.help) {
       showHelp();
       return;
     }
 
-    // ── Handle subcommands ────────────────────────────────────────────────
     if (command === 'configure') {
       intro();
       await handleConfigure(subcommand);
       return;
     }
 
-    // ── Default: full setup or re-run ─────────────────────────────────────
     intro();
 
     const existing = checkExistingSetup();
@@ -59,17 +94,22 @@ function showHelp() {
     awesome-opencode configure skills   Add/remove skills
     awesome-opencode configure models   Change model strategy
     awesome-opencode configure mcp      Add/remove MCP servers
-    awesome-opencode --help             Show this help
 
   Flags:
-    --skipSSL                           Set NODE_TLS_REJECT_UNAUTHORIZED=0
-                                        (useful behind corporate proxies)
+    --help, -h                          Show this help
+    --config <path>                     Path to external opencode.json
+                                        (default: ./opencode.json)
+    --crt <path>                        Path to custom CA certificate (.crt/.pem)
+                                        Sets NODE_EXTRA_CA_CERTS for TLS
+    --skipSSL                           Disable TLS certificate verification
+                                        Sets NODE_TLS_REJECT_UNAUTHORIZED=0
 
   Examples:
     npx @weisser-dev/awesome-opencode
-    awesome-opencode configure mcp
-    awesome-opencode --skipSSL
+    awesome-opencode --config ~/shared/opencode.json
+    awesome-opencode --crt /etc/ssl/corporate-ca.crt
     awesome-opencode --skipSSL configure models
+    awesome-opencode --config /mnt/config/opencode.json --crt /mnt/certs/ca.pem
 
   Docs: https://github.com/weisser-dev/awesome-opencode
 `);
@@ -92,6 +132,15 @@ async function handleExistingSetup(existing) {
   }
   if (existing.modelStrategy) {
     console.log(chalk.gray(`  Models:     ${existing.modelStrategy}`));
+  }
+  if (flags.configPath) {
+    console.log(chalk.gray(`  Config:     ${flags.configPath}`));
+  }
+  if (flags.crtPath) {
+    console.log(chalk.gray(`  CA cert:    ${flags.crtPath}`));
+  }
+  if (flags.skipSSL) {
+    console.log(chalk.yellow('  SSL:        verification disabled (--skipSSL)'));
   }
   console.log('');
 
@@ -124,10 +173,10 @@ async function handleExistingSetup(existing) {
 
   switch (action) {
     case 'start':
-      await launchOpenCode({ forceSandbox: false });
+      await launchOpenCode({ forceSandbox: false, flags });
       break;
     case 'sandbox':
-      await launchOpenCode({ forceSandbox: true });
+      await launchOpenCode({ forceSandbox: true, flags });
       break;
     case 'reconfigure':
       await runFullSetup();
@@ -149,7 +198,7 @@ async function handleExistingSetup(existing) {
 }
 
 async function handleConfigure(what) {
-  const project = await detectProject();
+  const project = await detectProject({ configPath: flags.configPath });
 
   switch (what) {
     case 'agents': {
@@ -175,7 +224,6 @@ async function handleConfigure(what) {
       break;
     }
     default: {
-      // No subcommand: full reconfigure
       await runFullSetup();
     }
   }
@@ -184,22 +232,20 @@ async function handleConfigure(what) {
 }
 
 async function runFullSetup() {
-  const project = await detectProject();
+  const project = await detectProject({ configPath: flags.configPath });
   const agents = await promptAgents(project);
   const skills = await promptSkills(project);
   const modelConfig = await promptModels(project);
 
-  // MCP: curated list + optional mcp.so search
   const mcpConfig = await promptMcp(project);
   const mcpSearchResults = await promptMcpSearch(mcpConfig);
 
-  // Cost & context control: step limits per agent
   const costControl = await promptCostControl(agents);
 
   await generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults, costControl });
   await promptAgentsMd({ project, agents, skills, modelConfig });
   outro();
-  await launchOpenCode();
+  await launchOpenCode({ flags });
 }
 
 main();

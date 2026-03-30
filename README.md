@@ -429,6 +429,27 @@ awesome-opencode configure mcp        # Add/remove MCP servers
 awesome-opencode --help               # Show help
 ```
 
+### Flags
+
+```bash
+awesome-opencode --config <path>      # Use external opencode.json
+awesome-opencode --crt <path>         # Custom CA certificate (.crt/.pem)
+awesome-opencode --skipSSL            # Disable TLS verification
+```
+
+Flags can be combined with subcommands and with each other:
+
+```bash
+# Corporate setup: custom cert + external config
+awesome-opencode --crt /etc/ssl/corporate-ca.crt --config ~/shared/opencode.json
+
+# Behind proxy with self-signed cert
+awesome-opencode --skipSSL configure mcp
+
+# All flags are forwarded into Docker sandbox automatically
+awesome-opencode --crt /certs/ca.pem --skipSSL
+```
+
 ### Sandboxed Mode (Docker)
 
 Run OpenCode in an isolated Docker container where only the current project is accessible:

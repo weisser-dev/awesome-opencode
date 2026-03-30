@@ -335,7 +335,7 @@ function detectPackageManager() {
   return null;
 }
 
-export async function detectProject() {
+export async function detectProject({ configPath: externalConfigPath } = {}) {
   const spinner = ora('Analyzing project...').start();
 
   const project = {
@@ -349,10 +349,12 @@ export async function detectProject() {
     existingAgents: [],
     existingMcps: [],
     existingProviders: [],
+    configPath: null,
   };
 
-  // Detect existing opencode.json
-  const configPath = path.join(CWD, 'opencode.json');
+  // Detect existing opencode.json (external path takes priority)
+  const configPath = externalConfigPath || path.join(CWD, 'opencode.json');
+  project.configPath = configPath;
   if (fs.existsSync(configPath)) {
     project.hasOpenCodeConfig = true;
     try {
@@ -466,7 +468,10 @@ export async function detectProject() {
   if (project.packageManager) {
     console.log(chalk.gray(`  Package manager: ${project.packageManager}`));
   }
-  console.log(chalk.gray(`  Existing config: ${project.hasOpenCodeConfig ? 'yes' : 'no'}`));
+  const configLabel = project.hasOpenCodeConfig
+    ? (externalConfigPath ? `yes (${externalConfigPath})` : 'yes')
+    : 'no';
+  console.log(chalk.gray(`  Existing config: ${configLabel}`));
   if (project.existingProviders.length > 0) {
     console.log(chalk.gray(`  Custom providers: ${project.existingProviders.join(', ')}`));
   }
@@ -2286,7 +2291,7 @@ const PROVIDER_ENV_CONFIGS = [
   },
 ];
 
-export async function launchOpenCode({ forceSandbox } = {}) {
+export async function launchOpenCode({ forceSandbox, flags = {} } = {}) {
   const { input } = await import('@inquirer/prompts');
 
   // ── Step 1: Sandbox question ──────────────────────────────────────────────
@@ -2436,12 +2441,35 @@ export async function launchOpenCode({ forceSandbox } = {}) {
     }
 
     // Build Docker command
+    const volumeFlags = ['-v "$PWD":"$PWD"'];
+
     // If NODE_TLS_REJECT_UNAUTHORIZED=0 is set (via --skipSSL), pass it into the container
     if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
       envFlags.push('-e NODE_TLS_REJECT_UNAUTHORIZED=0');
     }
+
+    // If --crt is set, mount the cert into the container and set NODE_EXTRA_CA_CERTS
+    if (flags.crtPath && fs.existsSync(flags.crtPath)) {
+      const certDir = path.dirname(flags.crtPath);
+      const certFile = path.basename(flags.crtPath);
+      const containerCertPath = `/certs/${certFile}`;
+      volumeFlags.push(`-v "${flags.crtPath}":"${containerCertPath}":ro`);
+      envFlags.push(`-e NODE_EXTRA_CA_CERTS=${containerCertPath}`);
+    }
+
+    // If --config points to a file outside $PWD, mount it into the container
+    if (flags.configPath && fs.existsSync(flags.configPath)) {
+      const configResolved = path.resolve(flags.configPath);
+      const cwd = process.cwd();
+      if (!configResolved.startsWith(cwd)) {
+        // External config -- mount it read-only
+        volumeFlags.push(`-v "${configResolved}":"${configResolved}":ro`);
+      }
+    }
+
+    const volumeString = volumeFlags.join(' \\\n  ');
     const envString = envFlags.length > 0 ? ' \\\n  ' + envFlags.join(' \\\n  ') : '';
-    const dockerCmd = `docker run -it --rm \\\n  -v "$PWD":"$PWD" \\\n  -w "$PWD"${envString} \\\n  node:22 \\\n  bash -c "npm i -g opencode-ai && opencode"`;
+    const dockerCmd = `docker run -it --rm \\\n  ${volumeString} \\\n  -w "$PWD"${envString} \\\n  node:22 \\\n  bash -c "npm i -g opencode-ai && opencode"`;
 
     console.log('');
     console.log(chalk.bold('  Docker command:'));
@@ -2472,7 +2500,8 @@ export async function launchOpenCode({ forceSandbox } = {}) {
 
     // Build the actual command as a single string for shell execution
     const shellEnv = envFlags.join(' ');
-    const shellCmd = `docker run -it --rm -v "$PWD":"$PWD" -w "$PWD" ${shellEnv} node:22 bash -c "npm i -g opencode-ai && opencode"`;
+    const shellVolumes = volumeFlags.join(' ');
+    const shellCmd = `docker run -it --rm ${shellVolumes} -w "$PWD" ${shellEnv} node:22 bash -c "npm i -g opencode-ai && opencode"`;
 
     const child = spawn('sh', ['-c', shellCmd], {
       stdio: 'inherit',
