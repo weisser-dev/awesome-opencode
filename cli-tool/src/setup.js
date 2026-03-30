@@ -2437,7 +2437,7 @@ export async function launchOpenCode({ forceSandbox } = {}) {
 
     // Build Docker command
     const envString = envFlags.length > 0 ? ' \\\n  ' + envFlags.join(' \\\n  ') : '';
-    const dockerCmd = `docker run -it --rm \\\n  -v "$(pwd)":/workspace \\\n  -w /workspace${envString} \\\n  node:22 \\\n  bash -c "npm i -g opencode-ai && opencode"`;
+    const dockerCmd = `docker run -it --rm \\\n  -v "$PWD":"$PWD" \\\n  -w "$PWD"${envString} \\\n  node:22 \\\n  bash -c "npm i -g opencode-ai && opencode"`;
 
     console.log('');
     console.log(chalk.bold('  Docker command:'));
@@ -2468,7 +2468,7 @@ export async function launchOpenCode({ forceSandbox } = {}) {
 
     // Build the actual command as a single string for shell execution
     const shellEnv = envFlags.join(' ');
-    const shellCmd = `docker run -it --rm -v "$(pwd)":/workspace -w /workspace ${shellEnv} node:22 bash -c "npm i -g opencode-ai && opencode"`;
+    const shellCmd = `docker run -it --rm -v "$PWD":"$PWD" -w "$PWD" ${shellEnv} node:22 bash -c "npm i -g opencode-ai && opencode"`;
 
     const child = spawn('sh', ['-c', shellCmd], {
       stdio: 'inherit',

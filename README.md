@@ -442,8 +442,8 @@ Run OpenCode in an isolated Docker container where only the current project is a
 
   Docker command:
   docker run -it --rm \
-    -v "$(pwd)":/workspace \
-    -w /workspace \
+    -v "$PWD":"$PWD" \
+    -w "$PWD" \
     -e AWS_BEARER_TOKEN_BEDROCK \
     -e AWS_REGION="eu-central-1" \
     node:22 \
