@@ -1,6 +1,6 @@
 {
   "name": "@weisser-dev/awesome-opencode",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Interactive CLI to set up OpenCode best practices: agents, skills, model optimization, and configs",
   "type": "module",
   "bin": {
