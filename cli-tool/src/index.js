@@ -3,16 +3,21 @@
 import path from 'path';
 import fs from 'fs';
 import { intro, checkExistingSetup, detectProject, promptAgents, promptSkills, promptModels, promptMcp, promptMcpSearch, promptCostControl, generateFiles, promptAgentsMd, outro, launchOpenCode } from './setup.js';
+import { runPacksCommand, promptAndInstallPacks, PACKS_HELP } from './lib/packs-cli.js';
 
 // ── Parse flags ─────────────────────────────────────────────────────────────
 
 const rawArgs = process.argv.slice(2);
 const flags = {};
 const positional = [];
+const packArgs = [];
+const PACK_COMMANDS = new Set(['packs', 'design-pack']);
 
 for (let i = 0; i < rawArgs.length; i++) {
   const arg = rawArgs[i];
-  if (arg === '--skipSSL' || arg === '--skip-ssl') {
+  if (PACK_COMMANDS.has(positional[0]) && !['--skipSSL', '--skip-ssl', '--crt', '--config'].includes(arg)) {
+    packArgs.push(arg);  // options of the packs command are parsed in lib/packs-cli.js
+  } else if (arg === '--skipSSL' || arg === '--skip-ssl') {
     flags.skipSSL = true;
   } else if (arg === '--config' && rawArgs[i + 1]) {
     flags.configPath = path.resolve(rawArgs[++i]);
@@ -53,6 +58,13 @@ if (flags.configPath) {
 
 async function main() {
   try {
+    if (PACK_COMMANDS.has(command)) {
+      intro();
+      // design-pack = packs with the design pack preselected (kept as a short alias)
+      await runPacksCommand(packArgs, { defaultPacks: ['design'] });
+      return;
+    }
+
     if (flags.help) {
       showHelp();
       return;
@@ -94,6 +106,9 @@ function showHelp() {
     awesome-opencode configure skills   Add/remove skills
     awesome-opencode configure models   Change model strategy
     awesome-opencode configure mcp      Add/remove MCP servers
+    awesome-opencode configure packs    Choose and install skill packs interactively
+    awesome-opencode packs [options]    Install skill packs (design, process, behavior)
+    awesome-opencode design-pack        Same as "packs --pack design"
 
   Flags:
     --help, -h                          Show this help
@@ -113,6 +128,7 @@ function showHelp() {
 
   Docs: https://github.com/weisser-dev/awesome-opencode
 `);
+  console.log(PACKS_HELP);
 }
 
 async function handleExistingSetup(existing) {
@@ -163,6 +179,7 @@ async function handleExistingSetup(existing) {
     { name: 'Configure skills', value: 'configure-skills' },
     { name: 'Configure models', value: 'configure-models' },
     { name: 'Configure MCP servers', value: 'configure-mcp' },
+    { name: 'Install skill packs (design / process / behavior)', value: 'configure-packs' },
     { name: 'Exit', value: 'exit' },
   ];
 
@@ -193,11 +210,19 @@ async function handleExistingSetup(existing) {
     case 'configure-mcp':
       await handleConfigure('mcp');
       break;
+    case 'configure-packs':
+      await promptAndInstallPacks();
+      break;
     // exit: just return
   }
 }
 
 async function handleConfigure(what) {
+  if (what === 'packs') {
+    await promptAndInstallPacks();
+    outro();
+    return;
+  }
   const project = await detectProject({ configPath: flags.configPath });
 
   switch (what) {
@@ -243,6 +268,10 @@ async function runFullSetup() {
   const costControl = await promptCostControl(agents);
 
   await generateFiles({ project, agents, skills, modelConfig, mcpConfig, mcpSearchResults, costControl });
+  const { confirm } = await import('@inquirer/prompts');
+  if (await confirm({ message: 'Install skill packs (design / process / behavior)?', default: false })) {
+    await promptAndInstallPacks();
+  }
   await promptAgentsMd({ project, agents, skills, modelConfig });
   outro();
   await launchOpenCode({ flags });

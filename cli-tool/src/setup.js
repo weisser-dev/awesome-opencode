@@ -22,7 +22,7 @@ export { launchOpenCode } from './lib/docker.js';
 export function intro() {
   console.log('');
   console.log(chalk.bold.cyan('  Awesome OpenCode'));
-  console.log(chalk.gray('  108 agents, 15 skills, smart model config'));
+  console.log(chalk.gray('  108 agents, 15 skills, 3 skill packs, smart model config'));
   console.log(chalk.gray('  https://github.com/weisser-dev/awesome-opencode'));
   console.log('');
 }
