@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-03
+
+### Added
+
+- **Skill packs** (`awesome-opencode packs`, alias `design-pack`, menu entry "Install skill packs", `configure packs`, optional step at the end of the full setup):
+  - `design`: frontend design skills (taste skills, image-to-code, DESIGN.md references, web interface review with vendored Web Interface Guidelines, local Playwright checks, `design-workflow`).
+  - `process`: 23 engineering lifecycle skills and the commands `/spec` `/plan` `/build` `/test` `/constraints` `/review` `/webperf` `/code-simplify` `/ship`.
+  - `behavior` (opt-in, never part of `all`): ponytail minimal-code mode.
+  - Options: `--pack design|process|behavior|all`, `--global`, `--only`, `--all`, `--list`, `--dry-run`, `--force`.
+- `templates/packs/sources.lock.json`: every upstream source pinned to a reviewed commit with license data and per-file sha256; imported from weisser-dev/agentic-skills with `scripts/import-packs.js`.
+- Tests for lock integrity, bundled file provenance, run-time network patterns, selection, URL safety, idempotent install, refusal of locally modified items, backups and sha256 mismatch handling.
+
+### Security
+
+- Pack items are copied from the package or downloaded only from `raw.githubusercontent.com` at the pinned commit; every file is verified against its sha256 pin before anything is written. No upstream scripts, hooks, plugins or MCP servers are installed or executed.
+- Third-party skills that fetched rules or docs at run time, hotlinked assets, installed tools, used external APIs/model CLIs or pushed/deployed without confirmation are shipped as reviewed, adapted copies or excluded (details in each skill's `UPSTREAM.md`).
+
+### Changed
+
+- Release workflow accepts a version that is already set in `package.json` (`npm version --allow-same-version`).
+
 ## [1.4.0] - 2026-03-30
 
 ### Added
