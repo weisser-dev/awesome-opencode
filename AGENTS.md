@@ -8,11 +8,13 @@ This is a Node.js/TypeScript project providing an open-source collection of agen
 - `templates/agents/` -- 108 agent markdown definitions organized by category
 - `templates/skills/` -- 15 skill definitions (each in `<name>/SKILL.md`)
 - `templates/configs/` -- 5 opencode.json preset configurations
+- `templates/packs/` -- skill packs (design, process, behavior): `sources.lock.json` + bundled skills/commands, imported from weisser-dev/agentic-skills via `cli-tool/scripts/import-packs.js`; never edit by hand
 - `cli-tool/` -- The `@weisser-dev/awesome-opencode` npm package
   - `cli-tool/src/index.js` -- Entry point, flow control, re-run detection
   - `cli-tool/src/setup.js` -- Core logic: detection, prompts, model intelligence, file generation (~1800 lines)
   - `cli-tool/templates/` -- Bundled copy of templates for npm distribution
   - `cli-tool/scripts/sync-templates.js` -- Pre-publish script to sync templates from repo root
+  - `cli-tool/src/lib/packs.js` / `packs-cli.js` -- skill pack installer (pinned sources, sha256 verification, no execution)
 
 ## Architecture
 

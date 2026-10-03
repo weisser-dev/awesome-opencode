@@ -2,7 +2,7 @@
 
 The most comprehensive collection of agents, skills, and tooling for [OpenCode](https://opencode.ai) -- the open-source AI coding agent.
 
-**108 agents** | **15 skills** | **18 curated MCP servers** | **Live MCP registry search** | **Smart model detection**
+**108 agents** | **15 skills** | **3 skill packs** | **18 curated MCP servers** | **Live MCP registry search** | **Smart model detection**
 
 > Inspired by [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents), fully adapted for OpenCode with permissions, skills, and markdown agent format.
 
@@ -22,7 +22,7 @@ One command. It analyzes your project, walks you through agent/skill/model/MCP s
 
 ```shell
   Awesome OpenCode
-  108 agents, 15 skills, smart model config
+  108 agents, 15 skills, 3 skill packs, smart model config
   https://github.com/weisser-dev/awesome-opencode
 
 ? How would you like to set up your project?
@@ -126,7 +126,7 @@ On **re-run**, it remembers your setup:
 
 ```shell
   Awesome OpenCode
-  108 agents, 15 skills, smart model config
+  108 agents, 15 skills, 3 skill packs, smart model config
   https://github.com/weisser-dev/awesome-opencode
 
   Already configured!
@@ -351,6 +351,60 @@ On **re-run**, it remembers your setup:
 | `error-triage` | Stack trace parsing and root cause classification |
 | `performance-profile` | Performance hotspot analysis and optimization plan |
 
+### Skill Packs (design / process / behavior)
+
+Reviewed third-party skill collections, adapted for local use and pinned to exact upstream
+commits. Source of truth, review notes and adaptation tooling:
+[weisser-dev/agentic-skills](https://github.com/weisser-dev/agentic-skills/tree/main/packs).
+
+| Pack | Contents | In `--pack all` |
+|------|----------|-----------------|
+| `design` | Frontend design: `design-workflow`, `web-design-guidelines` (vendored Web Interface Guidelines), taste skills (`design-taste-frontend`, `redesign-existing-projects`, `minimalist-ui`, `high-end-visual-design`, `industrial-brutalist-ui`), `image-to-code`, `design-md-reference` (72 DESIGN.md references), `playwright-cli` (local screenshots); opt-in: `gpt-taste`, `full-output-enforcement` | yes |
+| `process` | 23 engineering lifecycle skills + commands `/spec` `/plan` `/build` `/test` `/constraints` `/review` `/webperf` `/code-simplify` `/ship` (from addyosmani/agent-skills, adapted) | yes |
+| `behavior` | `ponytail` minimal-code mode (+ review/audit/debt/help) | no, opt-in |
+
+```bash
+npx @weisser-dev/awesome-opencode packs --list               # packs and items
+npx @weisser-dev/awesome-opencode packs --dry-run            # plan for the design pack
+npx @weisser-dev/awesome-opencode packs                      # design pack -> ./.opencode/skills
+npx @weisser-dev/awesome-opencode packs --pack all           # design + process (skills + commands)
+npx @weisser-dev/awesome-opencode packs --pack behavior      # ponytail, only if you want it
+npx @weisser-dev/awesome-opencode packs --pack all --global  # ~/.config/opencode/{skills,commands}
+npx @weisser-dev/awesome-opencode design-pack                # alias for "packs --pack design"
+```
+
+The interactive menu offers the same under **Install skill packs**, and the full setup asks once
+at the end. Skills go to `.opencode/skills/<name>/SKILL.md` (or `~/.config/opencode/skills/`),
+commands to `.opencode/commands/<name>.md` (or `~/.config/opencode/commands/`), the locations
+OpenCode scans. Re-running is safe: unchanged items are skipped; items you edited are only
+replaced with `--force` (the old version is kept in `.agentic-pack-backups/`).
+
+Notes: the ponytail figures (fewer lines, lower cost) are the upstream author's own benchmarks
+and the mode can reduce thoroughness, so it is never installed by default. `playwright-cli` needs
+`@playwright/cli` as a pinned dev dependency of your project
+(`npm install --save-dev --save-exact @playwright/cli@0.1.22`); the skill never installs it.
+
+#### Security model
+
+- Bundled items (our own skills and the reviewed, adapted copies) are copied from the package; no network.
+- The few items that are installed unmodified from upstream (two taste skills, the opt-in output skill,
+  the DESIGN.md references, four ponytail skills) are downloaded only from
+  `raw.githubusercontent.com` for the repository and commit pinned in
+  `templates/packs/sources.lock.json`, and every file must match its sha256 pin before anything is written.
+- Nothing is executed: no upstream scripts, hooks, plugins or MCP servers are installed.
+- Installed skills and commands do not fetch anything, call external services or install tools at run time;
+  pushes, deploys and migrations need an explicit instruction.
+- No other sources are added without an explicit owner decision and a new review.
+
+| Source | License | Pinned commit |
+|--------|---------|---------------|
+| [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) | MIT | `ce26fc25` |
+| [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines) | MIT | `e3d624ba` |
+| [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md) | MIT | `f6961238` |
+| [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) | Apache-2.0 | `b85c7a73` |
+| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | MIT | `a06bc63b` |
+| [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | MIT | `c982cd41` |
+
 ### Smart Model Detection
 
 The CLI recognizes models from **any provider** -- including custom Bedrock, Azure, or self-hosted endpoints:
@@ -426,6 +480,9 @@ awesome-opencode configure agents     # Add/remove agents
 awesome-opencode configure skills     # Add/remove skills
 awesome-opencode configure models     # Change model strategy
 awesome-opencode configure mcp        # Add/remove MCP servers
+awesome-opencode configure packs      # Choose and install skill packs interactively
+awesome-opencode packs [options]      # Install skill packs (see "Skill Packs")
+awesome-opencode design-pack          # Same as "packs --pack design"
 awesome-opencode --help               # Show help
 ```
 
@@ -581,6 +638,7 @@ awesome-opencode/
     agents/                    # 108 agent definitions (.md)
     skills/                    # 15 skill definitions (SKILL.md)
     configs/                   # 5 opencode.json presets
+    packs/                     # skill packs: sources.lock.json + bundled skills/commands
   cli-tool/                    # @weisser-dev/awesome-opencode
     src/
       index.js                 # Entry point and flow control
@@ -588,6 +646,7 @@ awesome-opencode/
     templates/                 # Bundled copy for npm package
     scripts/
       sync-templates.js        # Pre-publish template sync
+      import-packs.js          # Import packs from a weisser-dev/agentic-skills checkout
     package.json
 ```
 
@@ -603,6 +662,7 @@ This project builds on the work of several open-source communities:
 - **[pricepertoken.com](https://pricepertoken.com/leaderboards/coding)** -- Model benchmark rankings and pricing data for the model intelligence feature.
 - **[models.dev](https://models.dev)** -- Open-source database of AI models (by anomalyco). Model fingerprints sourced from here.
 - **[registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io)** -- Official MCP server registry API for live search.
+- **Skill packs** -- [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines), [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md), [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli), [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail); license texts ship with each skill.
 
 ## Also by weisser-dev
 
