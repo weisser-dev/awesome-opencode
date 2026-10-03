@@ -17,18 +17,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Invalid version format: ${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
             echo "Expected: X.Y.Z (e.g. 0.3.0)"
             exit 1
           fi
@@ -38,7 +40,9 @@ jobs:
         working-directory: cli-tool
 
       - name: Set version in package.json
-        run: npm version ${{ inputs.version }} --no-git-tag-version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: npm version "$VERSION" --no-git-tag-version
         working-directory: cli-tool
 
       - name: Install dependencies
@@ -82,17 +86,19 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create git tag and release commit
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add cli-tool/package.json cli-tool/package-lock.json cli-tool/templates/
-          git commit -m "release: v${{ inputs.version }}" || true
-          git tag -a "v${{ inputs.version }}" -m "v${{ inputs.version }}"
+          git commit -m "release: v$VERSION" || true
+          git tag -a "v$VERSION" -m "v$VERSION"
           git push origin main
-          git push origin "v${{ inputs.version }}"
+          git push origin "v$VERSION"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ inputs.version }}
           name: v${{ inputs.version }}
