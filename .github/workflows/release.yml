@@ -42,7 +42,7 @@ jobs:
       - name: Set version in package.json
         env:
           VERSION: ${{ inputs.version }}
-        run: npm version "$VERSION" --no-git-tag-version
+        run: npm version "$VERSION" --no-git-tag-version --allow-same-version
         working-directory: cli-tool
 
       - name: Install dependencies
