@@ -1,0 +1,1780 @@
+{
+  "schemaVersion": 2,
+  "updated": "2026-10-03",
+  "policy": "Only the repositories and commits listed under sources may be fetched, only at install time, only the files listed per item, each verified by sha256. Upstream scripts, hooks and plugins are never executed or installed. Installed skills and commands must not fetch anything or call external services at run time.",
+  "packs": {
+    "design": {
+      "description": "Frontend design: taste skills, image-to-code, DESIGN.md references, web interface review, local Playwright checks.",
+      "inAll": true
+    },
+    "process": {
+      "description": "Engineering lifecycle skills and slash commands (/spec /plan /build /test /constraints /review /webperf /code-simplify /ship), adapted for local use.",
+      "inAll": true
+    },
+    "behavior": {
+      "description": "Opt-in behavior mode (ponytail: minimal-code 'lazy senior dev'). Changes how the agent writes all code, so it is never part of 'all' and must be named explicitly.",
+      "inAll": false
+    }
+  },
+  "sources": {
+    "taste-skill": {
+      "repo": "https://github.com/Leonxlnx/taste-skill",
+      "homepage": "https://www.tasteskill.dev/",
+      "commit": "ce26fc25c0e5e8cab638f883de62d9a86ee5e45b",
+      "commitDate": "2026-09-26",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Leonxlnx",
+      "licensePath": "LICENSE",
+      "review": "All skills/*/SKILL.md read. No hidden unicode, no prompt injection, no exfiltration. skill.sh only prints paths; scripts/*.mjs are README image tools; neither is used. Several skills hotlink picsum.photos / cdn.simpleicons.org, tell the agent to install packages or to generate images: those skills are shipped as reviewed, adapted copies (kind=derived)."
+    },
+    "web-interface-guidelines": {
+      "repo": "https://github.com/vercel-labs/web-interface-guidelines",
+      "commit": "e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
+      "commitDate": "2026-08-18",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2025 Vercel Labs",
+      "licensePath": "LICENSE",
+      "review": "command.md read: plain rule list and output format, no URLs, no commands, no hidden unicode. Vendored unchanged."
+    },
+    "vercel-agent-skills": {
+      "repo": "https://github.com/vercel-labs/agent-skills",
+      "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "commitDate": "2026-08-28",
+      "license": "none (repository has no LICENSE file)",
+      "review": "skills/web-design-guidelines/SKILL.md tells the agent to fetch the rules from the unpinned main branch of web-interface-guidelines on every run (content can change without review). Not installed and not copied; replaced by our own skills/web-design-guidelines with the vendored, pinned rules file."
+    },
+    "awesome-design-md": {
+      "repo": "https://github.com/VoltAgent/awesome-design-md",
+      "commit": "f6961238d5cddcf8042a74a70fc400ec67181abb",
+      "commitDate": "2026-09-21",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 VoltAgent",
+      "licensePath": "LICENSE",
+      "review": "All 74 design-md/*/DESIGN.md scanned (hidden unicode, URLs, commands, agent-directed phrasing) and spot-read. 34 files tell the agent to run `npx @google/design.md lint` (unpinned npm code at run time): that line is dropped at install time. opencode.ai and ollama contain curl|sh install pipelines as page content and are excluded. README files are not installed."
+    },
+    "playwright-cli": {
+      "repo": "https://github.com/microsoft/playwright-cli",
+      "commit": "b85c7a736bb473bf55b584e54a09ffa698d6d871",
+      "commitDate": "2026-09-28",
+      "npm": "@playwright/cli@0.1.22",
+      "license": "Apache-2.0",
+      "copyright": "Copyright (c) Microsoft Corporation",
+      "licensePath": "LICENSE",
+      "review": "npm 0.1.22 gitHead equals the pinned commit; no install scripts in @playwright/cli, playwright or playwright-core at the pinned versions. The CLI checks registry.npmjs.org for updates once a day (disable with NO_UPDATE_NOTIFIER=1). The upstream skill pre-approves Bash(playwright-cli:*) and npx playwright, recommends an unpinned global install, and documents attaching to the user's real browser, cookie/storage export and uploading screenshots to PRs: shipped as a restricted, rewritten derivative (kind=derived)."
+    },
+    "ponytail": {
+      "repo": "https://github.com/DietrichGebert/ponytail",
+      "commit": "c982cd411abb53323c4baa1baa3c2f020b8d0b08",
+      "commitDate": "2026-10-03",
+      "npm": "@dietrichgebert/ponytail@4.10.3",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 DietrichGebert",
+      "licensePath": "LICENSE",
+      "review": "All six skills/*/SKILL.md and .opencode/command/*.md read; hooks/, .opencode/plugins/, pi-extension/ and ponytail-mcp/ scanned (no network calls, no telemetry; hooks write mode flag files and inject instructions on every session start). Only the four plain skills are installed unmodified; ponytail-help is adapted (removed marketplace auto-update, global npm install, config for the hooks); ponytail-gain (author's benchmark claims), hooks, plugins, MCP server and agent-specific rule files are not installed."
+    },
+    "agent-skills": {
+      "repo": "https://github.com/addyosmani/agent-skills",
+      "commit": "a06bc63b3f8b829c14b0bbf53d99fefc39d58092",
+      "commitDate": "2026-10-02",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2025 Addy Osmani",
+      "licensePath": "LICENSE",
+      "review": "All 25 skills (incl. their references), the 7 top-level references, 4 agents and 9 .claude/commands read. No hidden unicode, no prompt injection, no allowed-tools. Several skills told the agent to install tools, run network audits, use Chrome DevTools MCP via npx @latest, fetch online docs, send artifacts to external model CLIs, or push/deploy without a confirmation gate: shipped as adapted copies (kind=derived, packs/adapt-agent-skills.py); browser-testing-with-devtools and source-driven-development are excluded."
+    }
+  },
+  "items": [
+    {
+      "name": "design-workflow",
+      "kind": "local",
+      "default": true,
+      "path": "skills/design-workflow",
+      "summary": "Our own orchestration skill: brief, pick a taste skill, implement, review, verify locally.",
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "web-design-guidelines",
+      "kind": "vendored",
+      "default": true,
+      "source": "web-interface-guidelines",
+      "path": "skills/web-design-guidelines",
+      "summary": "Our own review skill with the vendored, pinned Web Interface Guidelines rules (no run-time fetch).",
+      "files": [
+        {
+          "file": "references/web-interface-guidelines.md",
+          "upstreamPath": "command.md",
+          "sha256": "5a775e6411f790f518dbc9c1fa7c50a89e6873502d9a3530a6eb223a590bcfe8"
+        },
+        {
+          "file": "references/LICENSE-vercel-web-interface-guidelines",
+          "upstreamPath": "LICENSE",
+          "sha256": "6cd1609c9c12233507cdd2ce0d32e9a721e3c27494951be06b90090deeeb7af2"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "design-taste-frontend",
+      "kind": "derived",
+      "default": true,
+      "source": "taste-skill",
+      "path": "skills/design-taste-frontend",
+      "summary": "Main taste skill (upstream skills/taste-skill), adapted: no hotlinked assets, no autonomous installs, no doc fetching.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/taste-skill/SKILL.md",
+          "sha256": "aa194351b246b8b4799099d4ed7b033d29eab6e6e3d58d8d2172978be7b3ec89",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "redesign-existing-projects",
+      "kind": "derived",
+      "default": true,
+      "source": "taste-skill",
+      "path": "skills/redesign-existing-projects",
+      "summary": "Audit-first redesign skill (upstream skills/redesign-skill), adapted: local placeholders instead of picsum.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/redesign-skill/SKILL.md",
+          "sha256": "98ad3e5b051bfb71b2795f7e8a6aa0d32b51ee095606c098a4b2822ac07926c9",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "minimalist-ui",
+      "kind": "derived",
+      "default": true,
+      "source": "taste-skill",
+      "path": "skills/minimalist-ui",
+      "summary": "Editorial minimalism (upstream skills/minimalist-skill), adapted: local placeholders instead of picsum.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/minimalist-skill/SKILL.md",
+          "sha256": "36bc7328f085405f43b476938e62460fa573bf7e984e949e072bcf014831a44c",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "image-to-code",
+      "kind": "derived",
+      "default": true,
+      "source": "taste-skill",
+      "path": "skills/image-to-code",
+      "summary": "Reference image to code (upstream skills/image-to-code-skill), rewritten: provided images first, generation only with consent.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/image-to-code-skill/SKILL.md",
+          "sha256": "4c060a8064a8b13380bc2ef3d6e6a1d0b1e316aa093cd9807d0ce9e4eeb037fa",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "gpt-taste",
+      "kind": "derived",
+      "default": false,
+      "source": "taste-skill",
+      "path": "skills/gpt-taste",
+      "summary": "Opt-in. Motion-heavy GSAP landing pages (upstream skills/gpt-tasteskill), adapted: local placeholders, GSAP proposed not installed.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/gpt-tasteskill/SKILL.md",
+          "sha256": "2e64c269953f2656c21bf5a0fa6b4568e82fe0c72b36e8f84758e090349966a5",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "playwright-cli",
+      "kind": "derived",
+      "default": true,
+      "source": "playwright-cli",
+      "path": "skills/playwright-cli",
+      "summary": "Local visual verification with a pinned @playwright/cli dev dependency (rewritten, restricted derivative).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/playwright-cli/SKILL.md",
+          "sha256": "9bba755285a4c9ad72a4a41b9c7baef6fb516d329c0b44ed0573715f4479b906",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "9a7110fc2d2f964038e5dc49128f908f29f47a574c961cba16085914e879cbda"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "high-end-visual-design",
+      "kind": "fetch",
+      "default": true,
+      "source": "taste-skill",
+      "summary": "Agency-level soft UI (upstream skills/soft-skill), installed unmodified from the pinned commit.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/soft-skill/SKILL.md",
+          "sha256": "e1e32f5e2d420872c6c7332b53d5ff7721946766b78c4822b424c2d512c8fdbc"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "industrial-brutalist-ui",
+      "kind": "fetch",
+      "default": true,
+      "source": "taste-skill",
+      "summary": "Swiss/terminal brutalism (upstream skills/brutalist-skill), installed unmodified from the pinned commit.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/brutalist-skill/SKILL.md",
+          "sha256": "fffbaac8597f07679e9d87145533567658aedba3b5eca6f16a7075a333048caa"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "full-output-enforcement",
+      "kind": "fetch",
+      "default": false,
+      "source": "taste-skill",
+      "summary": "Opt-in. Bans placeholder/truncated code output (upstream skills/output-skill), installed unmodified. Changes general agent behavior, so not a default.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/output-skill/SKILL.md",
+          "sha256": "e5bf48b1ae561511439cf71672209a10a88cee0968cc925909ff861dfa0a96a7"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "design-md-reference",
+      "kind": "fetch",
+      "default": true,
+      "source": "awesome-design-md",
+      "wrapper": "wrappers/design-md-reference",
+      "summary": "Our own SKILL.md plus 72 DESIGN.md references from the pinned commit (lint-command lines dropped, two entries excluded).",
+      "collection": {
+        "upstreamDir": "design-md",
+        "fileName": "DESIGN.md",
+        "targetDir": "references",
+        "exclude": [
+          "ollama",
+          "opencode.ai"
+        ],
+        "dropLinesMatching": "^[ \t]*[0-9]+[.] Run `npx @google/design[.]md lint"
+      },
+      "files": [
+        {
+          "file": "references/LICENSE-awesome-design-md",
+          "upstreamPath": "LICENSE",
+          "sha256": "6d4bdc9a9cf30e7beb593475fdcdbf29f981ea6bd7923f202866145409f87b44"
+        },
+        {
+          "file": "references/airbnb/DESIGN.md",
+          "upstreamPath": "design-md/airbnb/DESIGN.md",
+          "collection": true,
+          "sha256": "add34130d67209ad105346d60fe2b290728b9711683969db4b7760e29477a5fe"
+        },
+        {
+          "file": "references/airtable/DESIGN.md",
+          "upstreamPath": "design-md/airtable/DESIGN.md",
+          "collection": true,
+          "sha256": "1d225e511213044d3c705bde50265ad010932bfd8a15740a144dd4f480128889",
+          "installedSha256": "b77b93f2671d4d6c48688d81f4905559fae76fe668ae62795384abf43da710c4"
+        },
+        {
+          "file": "references/apple/DESIGN.md",
+          "upstreamPath": "design-md/apple/DESIGN.md",
+          "collection": true,
+          "sha256": "83fbc614443a9b3d7569e9956a43e7b8740f9d0f939f58b8154f7a7cec3002b2"
+        },
+        {
+          "file": "references/binance/DESIGN.md",
+          "upstreamPath": "design-md/binance/DESIGN.md",
+          "collection": true,
+          "sha256": "378ff97d568ccbc316519b9d45a29d6649ed8961c9c486c3ed4cea7501d72371"
+        },
+        {
+          "file": "references/bmw/DESIGN.md",
+          "upstreamPath": "design-md/bmw/DESIGN.md",
+          "collection": true,
+          "sha256": "b7268279e7c98e85fb80890e06765f4ee8340ba1ea1ccb5a8a5b134de43dac3e"
+        },
+        {
+          "file": "references/bmw-m/DESIGN.md",
+          "upstreamPath": "design-md/bmw-m/DESIGN.md",
+          "collection": true,
+          "sha256": "824a1707c0a8d1609d72477d0fa211b9ebe4bdeb3e1fd701790af7b7bb669a4a"
+        },
+        {
+          "file": "references/bugatti/DESIGN.md",
+          "upstreamPath": "design-md/bugatti/DESIGN.md",
+          "collection": true,
+          "sha256": "375f0a20ada88cdee5e995ca7edcfbd584ddf5f887024deebd1bc75bfd55b1bc"
+        },
+        {
+          "file": "references/cal/DESIGN.md",
+          "upstreamPath": "design-md/cal/DESIGN.md",
+          "collection": true,
+          "sha256": "8cd21b7d67e94c899843d517f4b426e4fee33d47354a433d6a63ebcf79d5a654"
+        },
+        {
+          "file": "references/claude/DESIGN.md",
+          "upstreamPath": "design-md/claude/DESIGN.md",
+          "collection": true,
+          "sha256": "3d972f34f8d4f33b442fa28220cf3b7ca2f13c0a97c468e3988148f82521f9df"
+        },
+        {
+          "file": "references/clay/DESIGN.md",
+          "upstreamPath": "design-md/clay/DESIGN.md",
+          "collection": true,
+          "sha256": "1abd803a207fbe950a06e155adcd6013c2e149b13e7b88844f5069f9d3d99eb3"
+        },
+        {
+          "file": "references/clickhouse/DESIGN.md",
+          "upstreamPath": "design-md/clickhouse/DESIGN.md",
+          "collection": true,
+          "sha256": "50987e29b603cc7503ebe724af810fcf43845e96fdd4083e0fbe5fe00d2cdd2e"
+        },
+        {
+          "file": "references/cohere/DESIGN.md",
+          "upstreamPath": "design-md/cohere/DESIGN.md",
+          "collection": true,
+          "sha256": "1c49a5a5f88d43841d4f4afa33831328d47a5715048700a3b75086a822575883"
+        },
+        {
+          "file": "references/coinbase/DESIGN.md",
+          "upstreamPath": "design-md/coinbase/DESIGN.md",
+          "collection": true,
+          "sha256": "c8c67800dd7f58fcc87ed7d267a3bba862e3419e499e8a66d67731a69d2de1d6"
+        },
+        {
+          "file": "references/composio/DESIGN.md",
+          "upstreamPath": "design-md/composio/DESIGN.md",
+          "collection": true,
+          "sha256": "e7db886dabecca61f29b83e8f46d7a1e8a43889d30b81bc6e48162ccaafcbb2f"
+        },
+        {
+          "file": "references/cursor/DESIGN.md",
+          "upstreamPath": "design-md/cursor/DESIGN.md",
+          "collection": true,
+          "sha256": "a3db9b3019dc2f514fdee7cd0ca0a5232c0bd0119e23178e8eebaf6916258d9d"
+        },
+        {
+          "file": "references/dell-1996/DESIGN.md",
+          "upstreamPath": "design-md/dell-1996/DESIGN.md",
+          "collection": true,
+          "sha256": "e186c614b1223fe7015670472ac6bc84b5b3fdd5de5325b3ce5bfb7fbe9c8d6e"
+        },
+        {
+          "file": "references/elevenlabs/DESIGN.md",
+          "upstreamPath": "design-md/elevenlabs/DESIGN.md",
+          "collection": true,
+          "sha256": "3b359acfaafadbb499c7ed3eebe813a76e0be497a7157b77de207fe275068a66"
+        },
+        {
+          "file": "references/expo/DESIGN.md",
+          "upstreamPath": "design-md/expo/DESIGN.md",
+          "collection": true,
+          "sha256": "1be7e129b6f75afaa12318a7c51ab22f6f74a214dec22c4827cecc519f112363"
+        },
+        {
+          "file": "references/ferrari/DESIGN.md",
+          "upstreamPath": "design-md/ferrari/DESIGN.md",
+          "collection": true,
+          "sha256": "1199e2832641cac7e384aaf3b1f3db87f992240cea5d3d1eee04d9dc00acb17c"
+        },
+        {
+          "file": "references/figma/DESIGN.md",
+          "upstreamPath": "design-md/figma/DESIGN.md",
+          "collection": true,
+          "sha256": "716ce8431f47eb8b8135552710e3c4d538bccccf1202e4ceac5428c9aada9972",
+          "installedSha256": "a75d6b7d19adcb430859e1aac39648b6ac18765934cce0095171824f0127d181"
+        },
+        {
+          "file": "references/framer/DESIGN.md",
+          "upstreamPath": "design-md/framer/DESIGN.md",
+          "collection": true,
+          "sha256": "a5d47dddacf5a04577cec0be6fe0fc53b7402254c7686874af3e59bcc7588cb4",
+          "installedSha256": "433e60f3b9aee0a293df7d676d2121c1fb45254cbd767b5c4aa66aaca658e68e"
+        },
+        {
+          "file": "references/hashicorp/DESIGN.md",
+          "upstreamPath": "design-md/hashicorp/DESIGN.md",
+          "collection": true,
+          "sha256": "d2df9be72d867e48d318fd18db04e60a78357c27e392ab921fc2ba7f46951442",
+          "installedSha256": "a466fbe4efef921cf5c1c19d432ed0819226acf6d81c480872ad2e8b4ee5d7f9"
+        },
+        {
+          "file": "references/hp/DESIGN.md",
+          "upstreamPath": "design-md/hp/DESIGN.md",
+          "collection": true,
+          "sha256": "4c9a248046684bdde5311a0c9881814f50e2381c2b0f3c75b02a35fc64bc8bb8",
+          "installedSha256": "889741d511a0a09e754a59f8c782820336d4fd4b57c116efc573f5ac7200c5dc"
+        },
+        {
+          "file": "references/ibm/DESIGN.md",
+          "upstreamPath": "design-md/ibm/DESIGN.md",
+          "collection": true,
+          "sha256": "46f6fd65b5e7524fed1133b9b3c0dd619f9a0f145fbb2b87f3675c701a88f3bd",
+          "installedSha256": "0a9eff7f226f739fd3b3e0eab959ccf5341a3112a299b6b71b9a5973937a1de7"
+        },
+        {
+          "file": "references/intercom/DESIGN.md",
+          "upstreamPath": "design-md/intercom/DESIGN.md",
+          "collection": true,
+          "sha256": "962be23cd947e87a86b2ffbc0440e9d0808243a6ef3af2aa04e8e7cc04d48ba3",
+          "installedSha256": "cfb2e3ba800921ed826d7343878139dd8fe55ee1046cd7ce55ae18e4b3e370b7"
+        },
+        {
+          "file": "references/kraken/DESIGN.md",
+          "upstreamPath": "design-md/kraken/DESIGN.md",
+          "collection": true,
+          "sha256": "41bcbd5642c926a549f0d50f1151484c5776b4536233240c8415cfb79bcf1f38"
+        },
+        {
+          "file": "references/lamborghini/DESIGN.md",
+          "upstreamPath": "design-md/lamborghini/DESIGN.md",
+          "collection": true,
+          "sha256": "9aa68c53b481a0befdf72859db5625f85454122294509989aa58414aaee04b34"
+        },
+        {
+          "file": "references/linear.app/DESIGN.md",
+          "upstreamPath": "design-md/linear.app/DESIGN.md",
+          "collection": true,
+          "sha256": "30bd30e72c48a16e4bdbd010f2d1c85fab657c6fae3cc85389399aab10f9cb5f",
+          "installedSha256": "90ed73ded2ca423d321cd479d24a20d6e5ae246a2aa4f27e794027dc3fec07d0"
+        },
+        {
+          "file": "references/lovable/DESIGN.md",
+          "upstreamPath": "design-md/lovable/DESIGN.md",
+          "collection": true,
+          "sha256": "92790895c833104072643929ba56ebbf42c8f88ffb7bff1926462545d0ace6c7"
+        },
+        {
+          "file": "references/mastercard/DESIGN.md",
+          "upstreamPath": "design-md/mastercard/DESIGN.md",
+          "collection": true,
+          "sha256": "e76ceaa187f43bd24b8338d2b2314e71e9225b36492e40f32a55782281a10437"
+        },
+        {
+          "file": "references/meta/DESIGN.md",
+          "upstreamPath": "design-md/meta/DESIGN.md",
+          "collection": true,
+          "sha256": "306dfad97c006d47b134fb0dbd55ff68d3baa526844d6eb37346373c9ef35339",
+          "installedSha256": "21924452831a5763e15823ea3e96a6d7c3b69132908c8e65400c5fb98ef316f2"
+        },
+        {
+          "file": "references/minimax/DESIGN.md",
+          "upstreamPath": "design-md/minimax/DESIGN.md",
+          "collection": true,
+          "sha256": "2658b96488bb629749259b152c5ba2912a0e8feb6a03477e265879abd9264c50",
+          "installedSha256": "3814ec6d9b2a746d0f1f1d33b9870136bd862294b8a8425cb42c8aead8e2e8d2"
+        },
+        {
+          "file": "references/mintlify/DESIGN.md",
+          "upstreamPath": "design-md/mintlify/DESIGN.md",
+          "collection": true,
+          "sha256": "754ffcf35dcd39ef8aef450085ce936aaca5b872ff92caa66be99e91a5c3d5ec",
+          "installedSha256": "1d466ab79247a7d12867bd14f37180e7c8614fee658dd2abb5508ac2da366110"
+        },
+        {
+          "file": "references/miro/DESIGN.md",
+          "upstreamPath": "design-md/miro/DESIGN.md",
+          "collection": true,
+          "sha256": "87c71f76297277d64f9679e015a50da88e72d86d7b41badf8733eae1e4cde335",
+          "installedSha256": "5675f77dde511785826b3bfe03bfcf9ee913a052e1c84a556c5f9c5579c83459"
+        },
+        {
+          "file": "references/mistral.ai/DESIGN.md",
+          "upstreamPath": "design-md/mistral.ai/DESIGN.md",
+          "collection": true,
+          "sha256": "40e2c692d72c54bae1e43446e2d059b71d773668d39d71ccb7ededa9fa07d145",
+          "installedSha256": "2589cc781c4c1e9646388d9dd2a3b520928a9d2fb4a4b8056223e85fb396ba11"
+        },
+        {
+          "file": "references/mongodb/DESIGN.md",
+          "upstreamPath": "design-md/mongodb/DESIGN.md",
+          "collection": true,
+          "sha256": "4523f10efd5ccd46f9aeac3b98626e24bcf907bc0c1e46500cb0e3920f932e71",
+          "installedSha256": "3a7e622672f56e93409eb85a4eb65e5c8fc3a60c96729d22a8c61ffa9e921dcf"
+        },
+        {
+          "file": "references/nike/DESIGN.md",
+          "upstreamPath": "design-md/nike/DESIGN.md",
+          "collection": true,
+          "sha256": "d2a3d363665839e2ddc15c91b8a9f3e92b1962ff55a7ca5d964ab3bb88b8186c",
+          "installedSha256": "3bba37e6a5c2384fecaf8f9d6ef308c58ced13686f6b527e5bc144b10a2a3281"
+        },
+        {
+          "file": "references/nintendo-2001/DESIGN.md",
+          "upstreamPath": "design-md/nintendo-2001/DESIGN.md",
+          "collection": true,
+          "sha256": "9630af17090d5c39ba9d8b5915a597a96c7552efe1422b3b8c3f31fb3e636716"
+        },
+        {
+          "file": "references/notion/DESIGN.md",
+          "upstreamPath": "design-md/notion/DESIGN.md",
+          "collection": true,
+          "sha256": "fa9d6e78216d8f3e5d3990709ca2de6bc2e268e945bb94f255fd1bfb15455266",
+          "installedSha256": "c2ad38ce9f4ef2b7b91f1b95cd04f0bd8502f9613aaa7bb759b50117c78438e3"
+        },
+        {
+          "file": "references/nvidia/DESIGN.md",
+          "upstreamPath": "design-md/nvidia/DESIGN.md",
+          "collection": true,
+          "sha256": "d649be85daf075c98a17071e707e3901c6e19150044a81716acd01ef1169cc83",
+          "installedSha256": "2157f53df76b75c2a507d649fcf600b6007571aca0ebedc7d45bb61e884e0753"
+        },
+        {
+          "file": "references/pinterest/DESIGN.md",
+          "upstreamPath": "design-md/pinterest/DESIGN.md",
+          "collection": true,
+          "sha256": "26a202fd244e9213d5e2475d81581828da1dd97e089e44639d9783d04f96e4a8",
+          "installedSha256": "ae624573953efeb0076e3668d405a2f3a5eb6ffbab0f2a23d43b9ca6d8d11887"
+        },
+        {
+          "file": "references/playstation/DESIGN.md",
+          "upstreamPath": "design-md/playstation/DESIGN.md",
+          "collection": true,
+          "sha256": "2a56c109af6cb847fa091b768f719b498ac56b582d010860e73ea5fb72a1590d",
+          "installedSha256": "6b8a75b3494bec45ff4eaa9c1c8106819b68c0f5c1da8b4dfd80c6dcd30aea72"
+        },
+        {
+          "file": "references/posthog/DESIGN.md",
+          "upstreamPath": "design-md/posthog/DESIGN.md",
+          "collection": true,
+          "sha256": "01f497f751d56296bfcd5eb8806325a4bb4786d364941ec6e65c65fa9ee6d362",
+          "installedSha256": "f8a915e1663f0ab1a03732c2cfdc8cff261a5025b37b680dc92aeb172264082e"
+        },
+        {
+          "file": "references/raycast/DESIGN.md",
+          "upstreamPath": "design-md/raycast/DESIGN.md",
+          "collection": true,
+          "sha256": "6e2c5137e4d914b70996d589688374a801b6f29a35c9c019c22abb5e0170bda3",
+          "installedSha256": "d578651662cfae7241caa468de9b40c4036cf502ef62f59043c4f2df828f7114"
+        },
+        {
+          "file": "references/renault/DESIGN.md",
+          "upstreamPath": "design-md/renault/DESIGN.md",
+          "collection": true,
+          "sha256": "b343df9a67e57f248e9eee704f52b17dff9cf6a46d1dc9f8d7ab36741940db59",
+          "installedSha256": "cfdd619400fa32d7c38c4b2afd027492e372f76902976b14a75025d55699fdc8"
+        },
+        {
+          "file": "references/replicate/DESIGN.md",
+          "upstreamPath": "design-md/replicate/DESIGN.md",
+          "collection": true,
+          "sha256": "c22062d7b4174bf9ced7bc61c48389086cf6eed96a958e098ee70389893b0a15",
+          "installedSha256": "94e6c34c82d1ed7b55f635394167869376fb4d8720ce7554f3f6098dd12ab711"
+        },
+        {
+          "file": "references/resend/DESIGN.md",
+          "upstreamPath": "design-md/resend/DESIGN.md",
+          "collection": true,
+          "sha256": "99536f1b2380511a539f7f3466d46d351e4bf35a5af0c0df395bdc20af05c9be",
+          "installedSha256": "d10481dae6d23c9a2d18ab8187dd79d5854da621b8bfad9933c2b6a59b73f0bb"
+        },
+        {
+          "file": "references/revolut/DESIGN.md",
+          "upstreamPath": "design-md/revolut/DESIGN.md",
+          "collection": true,
+          "sha256": "b7fa8473315541f5d7e7d76f68a77105d255e6dae00d31d5eb34621d1d52de59",
+          "installedSha256": "83c64d2eaa1ce64f5f828ce96f2964ecf3c336ab02066a12ba71fb29e3671696"
+        },
+        {
+          "file": "references/runwayml/DESIGN.md",
+          "upstreamPath": "design-md/runwayml/DESIGN.md",
+          "collection": true,
+          "sha256": "b0e69bf643f89bb57ac0b82a3bf025e59ff1478c244cb0528ad1e38b3f80dac9"
+        },
+        {
+          "file": "references/sanity/DESIGN.md",
+          "upstreamPath": "design-md/sanity/DESIGN.md",
+          "collection": true,
+          "sha256": "ea1c442de2b23443f79af46524a81f33951606c8ff043ea9c25ba886264fbdd8"
+        },
+        {
+          "file": "references/sentry/DESIGN.md",
+          "upstreamPath": "design-md/sentry/DESIGN.md",
+          "collection": true,
+          "sha256": "655c91d7d23b5e869a966b7f1b63ae650567ad5d69003cfc64b0ee62c8e02c1f",
+          "installedSha256": "ecfb7c8da407ead389721d804a5f0fe717ca3c2922b1075e61f1339f25ae4ea4"
+        },
+        {
+          "file": "references/shopify/DESIGN.md",
+          "upstreamPath": "design-md/shopify/DESIGN.md",
+          "collection": true,
+          "sha256": "495e89b8d0a1848ded013c040f7a2ae62077e9d87fc4385350e25dee02ccdb38",
+          "installedSha256": "b55365bc04d1b9291c08123c84d6ead93409ace5800acfd22378d98136fac77f"
+        },
+        {
+          "file": "references/slack/DESIGN.md",
+          "upstreamPath": "design-md/slack/DESIGN.md",
+          "collection": true,
+          "sha256": "03cb243015a2e11d0faf05caba7f3d0c7fda6839b1f5ce707a23e8d46d1a11bd",
+          "installedSha256": "490f73633ceefe9656c8548d37ca7e4cf15233e2ac04ca787ba2b841487d5e6f"
+        },
+        {
+          "file": "references/spacex/DESIGN.md",
+          "upstreamPath": "design-md/spacex/DESIGN.md",
+          "collection": true,
+          "sha256": "495450c79faab54d12d677649ca0a2c30a60f64f536a802e945ad54185c5baad",
+          "installedSha256": "e34f82a7a7fd74fd144aae092fd56007d2fd0e698b0f1e1e7f3a06e56af57e4a"
+        },
+        {
+          "file": "references/spotify/DESIGN.md",
+          "upstreamPath": "design-md/spotify/DESIGN.md",
+          "collection": true,
+          "sha256": "72e964a6cf551d0603f9854f2f42ee08e97ad4d9e17e037f50f6233508288295"
+        },
+        {
+          "file": "references/starbucks/DESIGN.md",
+          "upstreamPath": "design-md/starbucks/DESIGN.md",
+          "collection": true,
+          "sha256": "e20338ee10226c63cf2588207288c08e12d60754a53f681657adaf364dfe8fa7"
+        },
+        {
+          "file": "references/stripe/DESIGN.md",
+          "upstreamPath": "design-md/stripe/DESIGN.md",
+          "collection": true,
+          "sha256": "5c8806b7dd3e0c2554ccba9d1e2a7c78e7c6e50e44fcf6ff5daea6026f8a9ed9",
+          "installedSha256": "220e714b0d1d6e1577a1c1d3c6f48bbcd147a3dbe8ec2ad8693601fb69db20e4"
+        },
+        {
+          "file": "references/supabase/DESIGN.md",
+          "upstreamPath": "design-md/supabase/DESIGN.md",
+          "collection": true,
+          "sha256": "f57287d7f44d59e8169dc4b4304ff03c1a2efb37f5433b9c04460caae7710880",
+          "installedSha256": "0ae92441b202cce7d50734637538bfc91690dafc9347c0aefafca4ae9a7c58d9"
+        },
+        {
+          "file": "references/superhuman/DESIGN.md",
+          "upstreamPath": "design-md/superhuman/DESIGN.md",
+          "collection": true,
+          "sha256": "3640298bd2957aee80ce88eb465a7541ba835ec105cba364a6a621d885c7f34f",
+          "installedSha256": "547c39d4813035cd06f0a8116b5330cff70f2eb853ec3c34f057ebc417f4bf50"
+        },
+        {
+          "file": "references/tesla/DESIGN.md",
+          "upstreamPath": "design-md/tesla/DESIGN.md",
+          "collection": true,
+          "sha256": "19f2f7e6073d708f46d2512e6bab3c7c417cf2b4d9f57ff6ec6f2e056ea942b0"
+        },
+        {
+          "file": "references/theverge/DESIGN.md",
+          "upstreamPath": "design-md/theverge/DESIGN.md",
+          "collection": true,
+          "sha256": "5da2c3116e6845826b043ac115a80896a399efda2cebc0188981fba2ef9bb526"
+        },
+        {
+          "file": "references/together.ai/DESIGN.md",
+          "upstreamPath": "design-md/together.ai/DESIGN.md",
+          "collection": true,
+          "sha256": "aee472c583f55a2f2c7ee1c403a96dddadb3ff6dc518335451f431e313bf43cf"
+        },
+        {
+          "file": "references/uber/DESIGN.md",
+          "upstreamPath": "design-md/uber/DESIGN.md",
+          "collection": true,
+          "sha256": "f30d2257d2d090790332d00ccb16cd2516c3c6008be61ad2ce83c4e991bcc803"
+        },
+        {
+          "file": "references/vercel/DESIGN.md",
+          "upstreamPath": "design-md/vercel/DESIGN.md",
+          "collection": true,
+          "sha256": "d0951b93c2b4ce9840c715c9f9b3e58a386c6c58ae5cc0f804dec3b116b95bd8"
+        },
+        {
+          "file": "references/vodafone/DESIGN.md",
+          "upstreamPath": "design-md/vodafone/DESIGN.md",
+          "collection": true,
+          "sha256": "293a40951e654283978fa744b24177a159d8f2a60f402bc735bf081618af0ef6"
+        },
+        {
+          "file": "references/voltagent/DESIGN.md",
+          "upstreamPath": "design-md/voltagent/DESIGN.md",
+          "collection": true,
+          "sha256": "4457887741ae5e965e205282b03c4bff83e47dd7a03cd7f38c64623a17569fcd"
+        },
+        {
+          "file": "references/warp/DESIGN.md",
+          "upstreamPath": "design-md/warp/DESIGN.md",
+          "collection": true,
+          "sha256": "5b1201f7b1b4e72570d148d1f980fd1cb35e6e4122d48dd271787aa3538a25ad"
+        },
+        {
+          "file": "references/webflow/DESIGN.md",
+          "upstreamPath": "design-md/webflow/DESIGN.md",
+          "collection": true,
+          "sha256": "9230c7b3951371fc2edc04958962e32bb7ec9a9b703aa6b72eaf5c7991b7c984"
+        },
+        {
+          "file": "references/wired/DESIGN.md",
+          "upstreamPath": "design-md/wired/DESIGN.md",
+          "collection": true,
+          "sha256": "eb439dcc573401dc30583f40e7eef8a60b769232da59e524de6dce56d5c3593e"
+        },
+        {
+          "file": "references/wise/DESIGN.md",
+          "upstreamPath": "design-md/wise/DESIGN.md",
+          "collection": true,
+          "sha256": "442df0ad7380efd8712f5574bdca34a73cfb41a2a43454ff459863a6258af547"
+        },
+        {
+          "file": "references/x.ai/DESIGN.md",
+          "upstreamPath": "design-md/x.ai/DESIGN.md",
+          "collection": true,
+          "sha256": "9c9ef45d8c0c3b9a7622833cdff8bd125ed6bf296a82cc7274215276706e52eb"
+        },
+        {
+          "file": "references/zapier/DESIGN.md",
+          "upstreamPath": "design-md/zapier/DESIGN.md",
+          "collection": true,
+          "sha256": "9aee43ba8ece1b4fd0753b4cad0a29f3497331882fa376f0dd4fea8a018c32fc"
+        }
+      ],
+      "pack": "design",
+      "type": "skill"
+    },
+    {
+      "name": "api-and-interface-design",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/api-and-interface-design",
+      "summary": "Engineering lifecycle skill api-and-interface-design (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/api-and-interface-design/SKILL.md",
+          "sha256": "e83d34f52ff12dd8a7c5134cd7e8140ea4541ec65e204f8a1e4cd366e30c4192",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "ci-cd-and-automation",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/ci-cd-and-automation",
+      "summary": "Engineering lifecycle skill ci-cd-and-automation (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/ci-cd-and-automation/SKILL.md",
+          "sha256": "a6ed8ed56456b01ff8314c44eefc69897d9905ae4e06bb2b7036286efb79b5f0",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "code-review-and-quality",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/code-review-and-quality",
+      "summary": "Engineering lifecycle skill code-review-and-quality (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/code-review-and-quality/SKILL.md",
+          "sha256": "2db1e850379f255fd3091ef278cde24cd6c7d2ba23e360cc52ea522c40d4396e",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/performance-checklist.md",
+          "upstreamPath": "references/performance-checklist.md",
+          "sha256": "40f564d1e62341e277c01ba42c42d95264b9ef3b8e5a23249dc6e121a7e70067",
+          "modified": true
+        },
+        {
+          "file": "references/security-checklist.md",
+          "upstreamPath": "references/security-checklist.md",
+          "sha256": "37774056502fe8970dcd2fd27dca5fa31f2a55232649fc3056c89c3af7d62755",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "code-simplification",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/code-simplification",
+      "summary": "Engineering lifecycle skill code-simplification (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/code-simplification/SKILL.md",
+          "sha256": "f0c5ed754057eb0c1e027e2587f59de816651feb5e837242296c43ea21cf621d",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "constraint-driven-development",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/constraint-driven-development",
+      "summary": "Engineering lifecycle skill constraint-driven-development (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/constraint-driven-development/SKILL.md",
+          "sha256": "06479d4305f286d23cfb99f5dc85695896785269664e1f6a8d800e3b71e70c10",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/floor-guard.md",
+          "upstreamPath": "skills/constraint-driven-development/references/floor-guard.md",
+          "sha256": "59715dc6c3c6c36ec9177f9ced65c379e80a4539b36115456666bfabc43a6a9c"
+        }
+      ]
+    },
+    {
+      "name": "context-engineering",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/context-engineering",
+      "summary": "Engineering lifecycle skill context-engineering (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/context-engineering/SKILL.md",
+          "sha256": "8b736cb9e55b82b265ab6ff78349c0e826e8a6df550deddf665b7fb3ff858b63",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "debugging-and-error-recovery",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/debugging-and-error-recovery",
+      "summary": "Engineering lifecycle skill debugging-and-error-recovery (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/debugging-and-error-recovery/SKILL.md",
+          "sha256": "21f3960f5d7ae2cc95c40896545004dbbcbbd752ea65fc2d53962554d4174220",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "deprecation-and-migration",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/deprecation-and-migration",
+      "summary": "Engineering lifecycle skill deprecation-and-migration (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/deprecation-and-migration/SKILL.md",
+          "sha256": "6a624f942e09c69863a4219b9bd5d56975026b67b0c70bc83385ffd2120b6142",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "documentation-and-adrs",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/documentation-and-adrs",
+      "summary": "Engineering lifecycle skill documentation-and-adrs (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/documentation-and-adrs/SKILL.md",
+          "sha256": "359b22460045583b0233ec3f80223459c4096b0fa513f5c29ade9c3985207d65",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "doubt-driven-development",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/doubt-driven-development",
+      "summary": "Engineering lifecycle skill doubt-driven-development (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/doubt-driven-development/SKILL.md",
+          "sha256": "6fa1fcd8420c28daf7e53c5b08b0f20b907911efd2a6d9bce0b9740da20a4008",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "frontend-ui-engineering",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/frontend-ui-engineering",
+      "summary": "Engineering lifecycle skill frontend-ui-engineering (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/frontend-ui-engineering/SKILL.md",
+          "sha256": "549044e9bd8d7fe993ce8e5c0d2b0f5465650676dc15805329973f936179eb1e",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/accessibility-checklist.md",
+          "upstreamPath": "references/accessibility-checklist.md",
+          "sha256": "61c759d94d52296231f5f310b92b401f56c44e4430dc3cc95ebac5d7b1d5ffac",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "git-workflow-and-versioning",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/git-workflow-and-versioning",
+      "summary": "Engineering lifecycle skill git-workflow-and-versioning (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/git-workflow-and-versioning/SKILL.md",
+          "sha256": "b7465d187935c52546d39fdc7bd6ac36d94eda25a9500ef8c18b767d2eb116ea",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "idea-refine",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/idea-refine",
+      "summary": "Engineering lifecycle skill idea-refine (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/idea-refine/SKILL.md",
+          "sha256": "79e773058963adc7646b0115b4f8a4afc974c5ff95843e4ef1cafff3cb51899e",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "examples.md",
+          "upstreamPath": "skills/idea-refine/examples.md",
+          "sha256": "563204bfbf2f80a444151695205af4cb759e722b3d1e5460e08f278a69c89ba1"
+        },
+        {
+          "file": "frameworks.md",
+          "upstreamPath": "skills/idea-refine/frameworks.md",
+          "sha256": "161ebc18fdf2d996bc62a87a2d747cf1bf53548354f8925de25c732c27f00309"
+        },
+        {
+          "file": "refinement-criteria.md",
+          "upstreamPath": "skills/idea-refine/refinement-criteria.md",
+          "sha256": "1ca2973a4d01b5cb37ab7ddb2eff77fa4e792634a33d0ce44961c068fc88d51a"
+        }
+      ]
+    },
+    {
+      "name": "incremental-implementation",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/incremental-implementation",
+      "summary": "Engineering lifecycle skill incremental-implementation (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/incremental-implementation/SKILL.md",
+          "sha256": "df66536610071727feae1ca95f3c391c248ad828041750ccd3699cce763aa00b",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/definition-of-done.md",
+          "upstreamPath": "references/definition-of-done.md",
+          "sha256": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee"
+        }
+      ]
+    },
+    {
+      "name": "interview-me",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/interview-me",
+      "summary": "Engineering lifecycle skill interview-me (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/interview-me/SKILL.md",
+          "sha256": "ace4b675999bb504593d572e0f73f3d7e803ad6fddf318445598c82c11939db2",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "observability-and-instrumentation",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/observability-and-instrumentation",
+      "summary": "Engineering lifecycle skill observability-and-instrumentation (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/observability-and-instrumentation/SKILL.md",
+          "sha256": "e7fcb0820306d46268de9594d676ad98e35040858926c412b7000faa52a61f87",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/observability-checklist.md",
+          "upstreamPath": "references/observability-checklist.md",
+          "sha256": "25fcd0e854596a5ab6f11b002050d245bf78f5ae0fcbd1df699b89451ae0e1e8"
+        }
+      ]
+    },
+    {
+      "name": "performance-optimization",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/performance-optimization",
+      "summary": "Engineering lifecycle skill performance-optimization (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/performance-optimization/SKILL.md",
+          "sha256": "665a83a7218d6aebd02ca329a7b2422cf28f7c55cb56f870c05e12047770245c",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/optimization-patterns.md",
+          "upstreamPath": "skills/performance-optimization/references/optimization-patterns.md",
+          "sha256": "fbf724076ffb8ac1a28e1a2773c0b550f5361090024b2dd32e5a682c69b7945f",
+          "modified": true
+        },
+        {
+          "file": "references/performance-checklist.md",
+          "upstreamPath": "references/performance-checklist.md",
+          "sha256": "40f564d1e62341e277c01ba42c42d95264b9ef3b8e5a23249dc6e121a7e70067",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "planning-and-task-breakdown",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/planning-and-task-breakdown",
+      "summary": "Engineering lifecycle skill planning-and-task-breakdown (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/planning-and-task-breakdown/SKILL.md",
+          "sha256": "ed0f90cc5951ddd4bcab7f871f64efec93a49af9279ef93bc470da77ad8da3f7",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/definition-of-done.md",
+          "upstreamPath": "references/definition-of-done.md",
+          "sha256": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee"
+        }
+      ]
+    },
+    {
+      "name": "security-and-hardening",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/security-and-hardening",
+      "summary": "Engineering lifecycle skill security-and-hardening (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/security-and-hardening/SKILL.md",
+          "sha256": "2e3fc60eed5aba97fe416f3f3c9317fdb014a682925ec70a733c3ff99e4b9858",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/hardening-patterns.md",
+          "upstreamPath": "skills/security-and-hardening/references/hardening-patterns.md",
+          "sha256": "d8ba58cad151aeca4804e48fc768240af0dd6b0ecddd07fbf24a1562140ba97a",
+          "modified": true
+        },
+        {
+          "file": "references/security-checklist.md",
+          "upstreamPath": "references/security-checklist.md",
+          "sha256": "37774056502fe8970dcd2fd27dca5fa31f2a55232649fc3056c89c3af7d62755",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "shipping-and-launch",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/shipping-and-launch",
+      "summary": "Engineering lifecycle skill shipping-and-launch (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/shipping-and-launch/SKILL.md",
+          "sha256": "1055d25dfe6cfeb6ae31eba3e2328fd0e7c66b285f0e44c40f67c77a59813281",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/accessibility-checklist.md",
+          "upstreamPath": "references/accessibility-checklist.md",
+          "sha256": "61c759d94d52296231f5f310b92b401f56c44e4430dc3cc95ebac5d7b1d5ffac",
+          "modified": true
+        },
+        {
+          "file": "references/definition-of-done.md",
+          "upstreamPath": "references/definition-of-done.md",
+          "sha256": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee"
+        },
+        {
+          "file": "references/performance-checklist.md",
+          "upstreamPath": "references/performance-checklist.md",
+          "sha256": "40f564d1e62341e277c01ba42c42d95264b9ef3b8e5a23249dc6e121a7e70067",
+          "modified": true
+        },
+        {
+          "file": "references/security-checklist.md",
+          "upstreamPath": "references/security-checklist.md",
+          "sha256": "37774056502fe8970dcd2fd27dca5fa31f2a55232649fc3056c89c3af7d62755",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "spec-driven-development",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/spec-driven-development",
+      "summary": "Engineering lifecycle skill spec-driven-development (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/spec-driven-development/SKILL.md",
+          "sha256": "c4b97ce3d7f24be0e67fd612c7595f65504872e3a9f8d338d098b2363fdb66ef",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        }
+      ]
+    },
+    {
+      "name": "test-driven-development",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/test-driven-development",
+      "summary": "Engineering lifecycle skill test-driven-development (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/test-driven-development/SKILL.md",
+          "sha256": "7c0c6ac057c19d7f8be65d9f49c3a638703b868f4625c78b70da5439d5d74fca",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/testing-patterns.md",
+          "upstreamPath": "references/testing-patterns.md",
+          "sha256": "f0bf05acd0edcadc27297ad5b74f104c8103ccfedba1a05cd6d6ae4af8364c56"
+        }
+      ]
+    },
+    {
+      "name": "using-agent-skills",
+      "pack": "process",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "skills/using-agent-skills",
+      "summary": "Engineering lifecycle skill using-agent-skills (adapted for local use).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/using-agent-skills/SKILL.md",
+          "sha256": "30787ef2c77bf1a4729fffed0f6523ba6fcbe81bdc436b36371b78c21394d3c3",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+        },
+        {
+          "file": "references/definition-of-done.md",
+          "upstreamPath": "references/definition-of-done.md",
+          "sha256": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee"
+        }
+      ]
+    },
+    {
+      "name": "spec",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/spec.md",
+      "summary": "Slash command /spec (adapted).",
+      "files": [
+        {
+          "file": "spec.md",
+          "upstreamPath": ".claude/commands/spec.md",
+          "sha256": "82325b4cc75ae2413c7bf4b6f84804eb662935d9df98edab50eef2b39ff904b0",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "plan",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/plan.md",
+      "summary": "Slash command /plan (adapted).",
+      "files": [
+        {
+          "file": "plan.md",
+          "upstreamPath": ".claude/commands/plan.md",
+          "sha256": "91d961b2a7011209bc6771c176932e72e11b99d0c524e3f63c9f2e2a94fbc993",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "build",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/build.md",
+      "summary": "Slash command /build (adapted).",
+      "files": [
+        {
+          "file": "build.md",
+          "upstreamPath": ".claude/commands/build.md",
+          "sha256": "74cc85b5092f8e209bcda36441a4ce17a5cd9efd2a7d8ce76ba202816088e277",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "test",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/test.md",
+      "summary": "Slash command /test (adapted).",
+      "files": [
+        {
+          "file": "test.md",
+          "upstreamPath": ".claude/commands/test.md",
+          "sha256": "62f72b64cfac6db984db072fdc987a23e6049876191297da5f37367def986ff2",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "constraints",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/constraints.md",
+      "summary": "Slash command /constraints (adapted).",
+      "files": [
+        {
+          "file": "constraints.md",
+          "upstreamPath": ".claude/commands/constraints.md",
+          "sha256": "f6d8fdf69be74059db907cf474149eae336b6fbfbcbfb791546e321085612171",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "review",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/review.md",
+      "summary": "Slash command /review (adapted).",
+      "files": [
+        {
+          "file": "review.md",
+          "upstreamPath": ".claude/commands/review.md",
+          "sha256": "8ad7da75873b430b737328d1bdd95fc8d2de4a4866737087feb4d218abe4e88f",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "webperf",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/webperf.md",
+      "summary": "Slash command /webperf (adapted).",
+      "files": [
+        {
+          "file": "webperf.md",
+          "upstreamPath": ".claude/commands/webperf.md",
+          "sha256": "74c0c1335f1397a5138a78eda4275e4e5deba16c4537f3a4b4971c3280d0ba27",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "code-simplify",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/code-simplify.md",
+      "summary": "Slash command /code-simplify (adapted).",
+      "files": [
+        {
+          "file": "code-simplify.md",
+          "upstreamPath": ".claude/commands/code-simplify.md",
+          "sha256": "71e9e8d38c5cbab5b7ecff324ed4ea0f1aaa4fd053ea6c2b717f2fbadfb65a91",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "ship",
+      "pack": "process",
+      "type": "command",
+      "kind": "derived",
+      "default": true,
+      "source": "agent-skills",
+      "path": "commands/ship.md",
+      "summary": "Slash command /ship (adapted).",
+      "files": [
+        {
+          "file": "ship.md",
+          "upstreamPath": ".claude/commands/ship.md",
+          "sha256": "02d2d0fc10bfb58bb62dcfe22ed396cd2b9f55dced7d5cd92fce6d29f0da4ace",
+          "modified": true
+        }
+      ]
+    },
+    {
+      "name": "ponytail",
+      "pack": "behavior",
+      "type": "skill",
+      "kind": "fetch",
+      "default": true,
+      "source": "ponytail",
+      "summary": "Minimal-code mode (YAGNI ladder, lite/full/ultra). Installed unmodified.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/ponytail/SKILL.md",
+          "sha256": "1316a2f3f95741d2300b116fe0c2d81ce4a9568656ed0a62643f54aaf09957f2"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab"
+        }
+      ]
+    },
+    {
+      "name": "ponytail-review",
+      "pack": "behavior",
+      "type": "skill",
+      "kind": "fetch",
+      "default": true,
+      "source": "ponytail",
+      "summary": "Over-engineering review of a diff. Installed unmodified.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/ponytail-review/SKILL.md",
+          "sha256": "7f8bfd0da3ba7c6fe0cd0de53e6f910adfef52166c6e99d7fa4de3360650b9b6"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab"
+        }
+      ]
+    },
+    {
+      "name": "ponytail-audit",
+      "pack": "behavior",
+      "type": "skill",
+      "kind": "fetch",
+      "default": true,
+      "source": "ponytail",
+      "summary": "Repo-wide over-engineering audit. Installed unmodified.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/ponytail-audit/SKILL.md",
+          "sha256": "554b7ac9c78a6b1a5e6b2bf0ba67eedf092baf71e465d03e591d0cfeb7947774"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab"
+        }
+      ]
+    },
+    {
+      "name": "ponytail-debt",
+      "pack": "behavior",
+      "type": "skill",
+      "kind": "fetch",
+      "default": true,
+      "source": "ponytail",
+      "summary": "Ledger of `ponytail:` shortcut comments. Installed unmodified.",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/ponytail-debt/SKILL.md",
+          "sha256": "d3611761039bdb2955e31856834feeec6ed5483a3fc64576e9a166f949a131d1"
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab"
+        }
+      ]
+    },
+    {
+      "name": "ponytail-help",
+      "pack": "behavior",
+      "type": "skill",
+      "kind": "derived",
+      "default": true,
+      "source": "ponytail",
+      "path": "skills/ponytail-help",
+      "summary": "Quick reference card (adapted: no auto-update, no global npm install, no hook config).",
+      "files": [
+        {
+          "file": "SKILL.md",
+          "upstreamPath": "skills/ponytail-help/SKILL.md",
+          "sha256": "23d9baf1b9a9464b40ebe1b5b50752795210b934fc8e248e791496e4c9a39fd2",
+          "modified": true
+        },
+        {
+          "file": "LICENSE",
+          "upstreamPath": "LICENSE",
+          "sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "source": "taste-skill",
+      "what": "skills/taste-skill-v1",
+      "reason": "Superseded by design-taste-frontend; same hotlinking issues."
+    },
+    {
+      "source": "taste-skill",
+      "what": "skills/imagegen-frontend-web, skills/imagegen-frontend-mobile, skills/brandkit",
+      "reason": "Image-generation-only skills; they cannot work without sending the brief to an external image-generation service."
+    },
+    {
+      "source": "taste-skill",
+      "what": "skills/stitch-skill",
+      "reason": "Built for Google Stitch (external service) and recommends picsum.photos."
+    },
+    {
+      "source": "taste-skill",
+      "what": "skill.sh, scripts/, .claude-plugin/, .github/",
+      "reason": "Not needed; upstream scripts are never executed."
+    },
+    {
+      "source": "vercel-agent-skills",
+      "what": "skills/web-design-guidelines/SKILL.md",
+      "reason": "No license; fetches unpinned rules at run time. Replaced by our own skill."
+    },
+    {
+      "source": "awesome-design-md",
+      "what": "design-md/ollama, design-md/opencode.ai",
+      "reason": "Contain curl|sh install pipelines as page content."
+    },
+    {
+      "source": "playwright-cli",
+      "what": "skills/playwright-cli/references/*.md",
+      "reason": "Cover cookie/storage export, PR uploads, tracing, test generation; not needed for local visual checks."
+    },
+    {
+      "source": "agent-skills",
+      "what": "skills/browser-testing-with-devtools",
+      "reason": "Requires Chrome DevTools MCP started via `npx -y chrome-devtools-mcp@latest` and documents attaching to the user's running browser profile; replaced by playwright-cli."
+    },
+    {
+      "source": "agent-skills",
+      "what": "skills/source-driven-development",
+      "reason": "Its core workflow fetches official documentation from the web at run time."
+    },
+    {
+      "source": "agent-skills",
+      "what": "agents/*.md (incl. web-performance-auditor), references/orchestration-patterns.md, hooks/, scripts/, .claude-plugin/, docs/, evals/",
+      "reason": "Not needed by the adapted skills/commands; web-performance-auditor calls PageSpeed/CrUX APIs and npx tools; orchestration-patterns asks to edit ~/.claude/settings.json; hooks run shell on session events."
+    },
+    {
+      "source": "ponytail",
+      "what": "skills/ponytail-gain",
+      "reason": "Prints the author's benchmark claims; no function."
+    },
+    {
+      "source": "ponytail",
+      "what": "hooks/, .opencode/plugins/, .opencode/command/, pi-extension/, ponytail-mcp/, agent-specific rule files, benchmarks/",
+      "reason": "Hooks/plugins auto-activate on every session and write flag/config files; installed skills are already slash commands in Claude Code and OpenCode."
+    }
+  ]
+}
