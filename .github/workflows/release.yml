@@ -79,11 +79,14 @@ jobs:
         run: npm test
         working-directory: cli-tool
 
+      # Trusted publishing (OIDC) needs npm >= 11.5.1; Node 22 ships an older npm.
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@11
+
+      # No token: npm authenticates through the GitHub OIDC identity (id-token: write).
       - name: Publish to npm
         run: npm publish --access public --provenance
         working-directory: cli-tool
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create git tag and release commit
         env:
