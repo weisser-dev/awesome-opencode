@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** Node.js 22.13 or newer is now required (chalk 6, ora 9 and @inquirer/prompts 8; Node 20 is end of life). CI runs on Node 22 and 24.
+- Upgraded runtime dependencies: chalk 6, ora 9, @inquirer/prompts 8.
+
 ## [1.5.0] - 2026-10-03
 
 ### Added
