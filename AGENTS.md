@@ -38,7 +38,7 @@ Key data structures:
 ## Code Standards
 
 - Pure ESM (`"type": "module"` in package.json)
-- Node.js 18+ required (uses global `fetch`, `AbortSignal.timeout`)
+- Node.js 22.13+ required (uses global `fetch`, `AbortSignal.timeout`)
 - No build step -- raw JavaScript, not TypeScript
 - All functions are exported and imported explicitly (no default exports except in index.js)
 - Template files use YAML frontmatter for agent/skill metadata
