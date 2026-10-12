@@ -1,6 +1,8 @@
 // ─── MCP Server Data ────────────────────────────────────────────────────────
 // MCP servers with language/framework relevance tags
-// Source: Official MCP Reference Servers and curated third-party integrations
+// Source: Official MCP Reference Servers (modelcontextprotocol/servers)
+//         + curated official third-party integrations from mcp.so
+//         + Invokely first-party documentation
 
 export const AVAILABLE_MCP = [
   // ── Universal (relevant for all projects) ─────────────────────────────────
