@@ -1,7 +1,6 @@
 // ─── MCP Server Data ────────────────────────────────────────────────────────
 // MCP servers with language/framework relevance tags
-// Source: Official MCP Reference Servers (modelcontextprotocol/servers)
-//         + curated official third-party integrations from mcp.so
+// Source: Official MCP Reference Servers and curated third-party integrations
 
 export const AVAILABLE_MCP = [
   // ── Universal (relevant for all projects) ─────────────────────────────────
@@ -164,5 +163,15 @@ export const AVAILABLE_MCP = [
     category: 'Design',
     relevance: ['node', 'dart'],
     config: { type: 'local', command: ['npx', '-y', 'figma-developer-mcp'], environment: { FIGMA_API_KEY: '{env:FIGMA_API_KEY}' } },
+  },
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+  {
+    name: 'invokely',
+    value: 'invokely',
+    description: 'Harmonized official statistics, with a source citation for each figure',
+    category: 'Data',
+    relevance: ['*'],
+    config: { type: 'remote', url: 'https://invokely.ai/mcp/trial' },
   },
 ];

@@ -2,7 +2,7 @@
 
 The most comprehensive collection of agents, skills, and tooling for [OpenCode](https://opencode.ai) -- the open-source AI coding agent.
 
-**108 agents** | **15 skills** | **3 skill packs** | **18 curated MCP servers** | **Live MCP registry search** | **Smart model detection**
+**108 agents** | **15 skills** | **3 skill packs** | **19 curated MCP servers** | **Live MCP registry search** | **Smart model detection**
 
 > Inspired by [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents), fully adapted for OpenCode with permissions, skills, and markdown agent format.
 
@@ -422,7 +422,7 @@ Supports 26+ model fingerprints across Anthropic, OpenAI, Google, DeepSeek, Meta
 - **Strong** (Sonnet, GPT-5.1): Code review, architecture, security
 - **Fast** (Haiku, Flash, mini): Exploration, docs, context management
 
-### 18 Curated MCP Servers + Live Registry Search
+### 19 Curated MCP Servers + Live Registry Search
 
 | Category | Servers |
 |----------|---------|
@@ -435,6 +435,9 @@ Supports 26+ model fingerprints across Anthropic, OpenAI, Google, DeepSeek, Meta
 | **Testing** | puppeteer |
 | **Collaboration** | atlassian, linear |
 | **Design** | figma |
+| **Data** | [invokely](https://invokely.ai/docs) |
+
+Invokely's remote MCP configuration uses the no-account trial endpoint, which allows 25 calls per day per IP. It also exposes five workspace tools that require an account; saving or updating workspace items requires Pro. See the [Invokely documentation](https://invokely.ai/docs) for current access details.
 
 MCP servers are **filtered by your selected languages** -- Terraform projects see AWS/K8s, Node projects see Vercel/Figma.
 
