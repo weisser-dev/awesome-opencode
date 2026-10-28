@@ -675,6 +675,7 @@ This project builds on the work of several open-source communities:
 - [OpenCode GitHub](https://github.com/anomalyco/opencode)
 - [OpenCode Discord](https://opencode.ai/discord)
 - [OpenCode Ecosystem](https://opencode.ai/docs/ecosystem/)
+- [multi-llm-plugin](https://github.com/beastlabai/multi-llm-plugin) -- Optional OpenCode plugin for parallel plan, code, and commit reviews across 19 coding CLIs, with validated findings and automated revision.
 - [MCP Server Directory](https://mcp.so)
 - [Official MCP Registry](https://registry.modelcontextprotocol.io)
 - [pricepertoken.com](https://pricepertoken.com) -- LLM pricing and benchmarks
