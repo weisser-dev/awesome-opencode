@@ -32,7 +32,7 @@ Key data structures:
 - `AVAILABLE_SKILLS` -- 15 skills with name and description
 - `MODEL_FINGERPRINTS` -- 26 regex patterns to identify models from any provider
 - `AGENT_TIERS` -- Maps agent names to model quality requirements (frontier/strong/fast)
-- `AVAILABLE_MCP` -- 18 curated MCP servers with language relevance tags
+- `AVAILABLE_MCP` -- 19 curated MCP servers with language relevance tags
 - `MODEL_PRESETS` -- 4 preset model strategies + keep + auto-optimize
 
 ## Code Standards

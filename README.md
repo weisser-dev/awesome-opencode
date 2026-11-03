@@ -2,7 +2,7 @@
 
 The most comprehensive collection of agents, skills, and tooling for [OpenCode](https://opencode.ai) -- the open-source AI coding agent.
 
-**108 agents** | **15 skills** | **3 skill packs** | **18 curated MCP servers** | **Live MCP registry search** | **Smart model detection**
+**108 agents** | **15 skills** | **3 skill packs** | **19 curated MCP servers** | **Live MCP registry search** | **Smart model detection**
 
 > Inspired by [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents), fully adapted for OpenCode with permissions, skills, and markdown agent format.
 
@@ -422,11 +422,11 @@ Supports 26+ model fingerprints across Anthropic, OpenAI, Google, DeepSeek, Meta
 - **Strong** (Sonnet, GPT-5.1): Code review, architecture, security
 - **Fast** (Haiku, Flash, mini): Exploration, docs, context management
 
-### 18 Curated MCP Servers + Live Registry Search
+### 19 Curated MCP Servers + Live Registry Search
 
 | Category | Servers |
 |----------|---------|
-| **Universal** | context7, gh-grep, memory, fetch, sequential-thinking |
+| **Universal** | context7, gh-grep, memory, remnant-read, fetch, sequential-thinking |
 | **Git** | git |
 | **Monitoring** | sentry, axiom |
 | **Database** | postgres, sqlite, redis |
@@ -437,6 +437,8 @@ Supports 26+ model fingerprints across Anthropic, OpenAI, Google, DeepSeek, Meta
 | **Design** | figma |
 
 MCP servers are **filtered by your selected languages** -- Terraform projects see AWS/K8s, Node projects see Vercel/Figma.
+
+`remnant-read` is an optional, unselected-by-default remote source of public agent experience. It complements the local `memory` server: use `search_memories` for a non-sensitive technical problem, then `inspect_memory` to check provenance and conditions before trying a result. It requires no account or token and disables automatic OAuth for this anonymous endpoint. This entry enables no feedback, publishing or automatic contribution. See [Remnant's evidence and participation guide](https://github.com/Dedale-Project/remnant-connect/blob/main/docs/PARTICIPATION_BLITZ.md).
 
 Plus: **live search** of the official MCP Registry (`registry.modelcontextprotocol.io`) to find and install any registered server.
 

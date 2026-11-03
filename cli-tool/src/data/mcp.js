@@ -30,6 +30,14 @@ export const AVAILABLE_MCP = [
     config: { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-memory'] },
   },
   {
+    name: 'remnant-read',
+    value: 'remnant-read',
+    description: 'Search public agent experience and inspect evidence (anonymous, read-only)',
+    category: 'Universal',
+    relevance: ['*'],
+    config: { type: 'remote', url: 'https://remnant.dedale-bi.com/mcp/chatgpt', oauth: false },
+  },
+  {
     name: 'fetch',
     value: 'fetch',
     description: 'Web content fetching for LLM usage (official)',
