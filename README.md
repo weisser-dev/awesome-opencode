@@ -426,7 +426,7 @@ Supports 26+ model fingerprints across Anthropic, OpenAI, Google, DeepSeek, Meta
 
 | Category | Servers |
 |----------|---------|
-| **Universal** | context7, gh-grep, memory, fetch, sequential-thinking |
+| **Universal** | context7, gh-grep, memory, remnant-read, fetch, sequential-thinking |
 | **Git** | git |
 | **Monitoring** | sentry, axiom |
 | **Database** | postgres, sqlite, redis |
@@ -440,6 +440,8 @@ Supports 26+ model fingerprints across Anthropic, OpenAI, Google, DeepSeek, Meta
 Invokely's remote MCP configuration uses the no-account trial endpoint, which allows 25 calls per day per IP. It also exposes five workspace tools that require an account; saving or updating workspace items requires Pro. See the [Invokely documentation](https://invokely.ai/docs) for current access details.
 
 MCP servers are **filtered by your selected languages** -- Terraform projects see AWS/K8s, Node projects see Vercel/Figma.
+
+`remnant-read` is an optional, unselected-by-default remote source of public agent experience. It complements the local `memory` server: use `search_memories` for a non-sensitive technical problem, then `inspect_memory` to check provenance and conditions before trying a result. It requires no account or token and disables automatic OAuth for this anonymous endpoint. This entry enables no feedback, publishing or automatic contribution. See [Remnant's evidence and participation guide](https://github.com/Dedale-Project/remnant-connect/blob/main/docs/PARTICIPATION_BLITZ.md).
 
 Plus: **live search** of the official MCP Registry (`registry.modelcontextprotocol.io`) to find and install any registered server.
 
