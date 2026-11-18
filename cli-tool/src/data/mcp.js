@@ -3,6 +3,7 @@
 // Source: Official MCP Reference Servers (modelcontextprotocol/servers)
 //         + curated official third-party integrations from mcp.so
 //         + Invokely first-party documentation
+//         + UberLLM first-party documentation
 
 export const AVAILABLE_MCP = [
   // ── Universal (relevant for all projects) ─────────────────────────────────
@@ -175,5 +176,15 @@ export const AVAILABLE_MCP = [
     category: 'Data',
     relevance: ['*'],
     config: { type: 'remote', url: 'https://invokely.ai/mcp/trial' },
+  },
+
+  // ── Media ─────────────────────────────────────────────────────────────────
+  {
+    name: 'uberllm',
+    value: 'uberllm',
+    description: 'Image and video generation, plus model price lookup (UberLLM marketplace, API key required)',
+    category: 'Media',
+    relevance: ['node', 'dart'],
+    config: { type: 'remote', url: 'https://api.uberllm.dev/mcp', headers: { Authorization: 'Bearer {env:UBERLLM_API_KEY}' } },
   },
 ];
